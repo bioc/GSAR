@@ -1,0 +1,767 @@
+%\VignetteIndexEntry{Gene Set Analysis in R -- the GSAR Package}
+%\VignetteKeyword{differential expression}
+
+\documentclass[a4paper,10pt]{article}
+
+\title{\textbf{Gene Set Analysis in R -- the GSAR Package}}
+\author{Yasir Rahmatallah$^1$ and Galina Glazko$^2$\\
+Division of Biomedical Informatics,\\
+University of Arkansas for Medical Sciences,\\
+Little Rock, AR 72205.\\
+\texttt{$^1$yrahmatallah@uams.edu, $^2$gvglazko@uams.edu}}
+
+\date{\Rpackage{GSAR} version \Sexpr{packageDescription("GSAR")$Version} 
+(Last revision \Sexpr{packageDescription("GSAR")$Date})}
+
+\SweaveOpts{echo=TRUE}
+\usepackage{graphicx}
+\usepackage{Bioconductor}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+%--------------------------------------------------------------------------
+\section{Introduction}
+%--------------------------------------------------------------------------
+This vignette gives an overview of the \R{} package \Rpackage{GSAR} 
+which provides a set of multivariate statistical tests for self-contained 
+gene set analysis (GSA). \Rpackage{GSAR} consists of two-sample multivariate 
+nonparametric statistical methods testing a null hypothesis against specific 
+alternative hypotheses, such as differences in shift, scale or correlation 
+structure. It also offers a graphical visualization tool for correlation 
+networks to examine the change in the net correlation structure of a gene set 
+between two conditions based on the minimum spanning trees. The package 
+implements the methods proposed in 
+\cite{Rahmatallah2014, Rahmatallah2012, Friedman1979} which were thoroughly 
+tested using simulated and microarray datasets in \cite{Rahmatallah2014} and 
+\cite{Rahmatallah2012}. These methods (except \Rfunction{RKStest}) can also be 
+applied to RNA-Seq count data given that proper normalization which accounts 
+for both the within-sample differences (gene lengths) and between-samples 
+differences (library sizes) is used. This vignette begins with a brief overview 
+of the theoretical concepts behind the methods, and then gives a number of 
+fully worked case studies, from microarrays to RNA-Seq count data.
+
+Many methodologies for testing the differential expression of gene sets have 
+been suggested and are collectively named gene set analysis (GSA). GSA can be 
+either \emph{competitive} or \emph{self-contained}. Competitive approaches 
+compare a gene set against its complement which contains all genes excluding 
+the genes in the set, and self-contained approaches compare whether a gene set 
+is differentially expressed (DE) between two phenotypes. Competitive GSA 
+approaches are influenced by the genomic coverage and the filtering of the data 
+and can increase their power by the addition of unrelated data and even noise 
+\cite{Tripathi2013}. Due to these problems, package \Rpackage{GSAR} focuses on 
+self-contained methods only. The possibility to formulate different 
+statistical hypotheses by using different test statistics with self-contained 
+approaches enables the formulation and exploration of different biological 
+hypotheses \cite{Rahmatallah2012}. For GSA, testing hypotheses other than the 
+equality of the mean expression vectors remains underexplored. Package 
+\Rpackage{GSAR} provides a set of methods to test a null hypothesis against 
+specific alternatives, such as differential shift or mean 
+(function \Rfunction{KStest}), scale or variance (function \Rfunction{RKStest}) 
+or correlation structure (function \Rfunction{GSNCAtest}). 
+
+Most of the tests available in package \Rpackage{GSAR} (all except 
+\Rfunction{GSNCAtest}) are network or graph-based. \Rpackage{GSAR} handles 
+graphs using the \Rclass{igraph} class from package \CRANpkg{igraph} 
+\cite{Csardi2006}. \Rpackage{GSAR} also invokes some functions from package 
+\Rpackage{igraph} in its methods implementation and uses the plot method for 
+class \CRANpkg{igraph} for visualizing the generated graphs.
+
+Data packages \Biocexptpkg{ALL}, \Biocexptpkg{GSVAdata} and 
+\Biocexptpkg{tweeDEseqCountData} which contain datasets are necessary for 
+running the examples and case studies in this document. Package \Rpackage{GSAR} 
+itself contains one preprocessed dataset to illustrate the analyses, which was 
+employed in the article introducing the gene sets net correlations analysis 
+(GSNCA) method \cite{Rahmatallah2014}. Other packages necessary for running 
+the examples and case studies in this document are packages \CRANpkg{MASS}, 
+\Biocpkg{GSEABase}, \Biocpkg{annotate}, \Biocannopkg{org.Hs.eg.db}, 
+\Biocpkg{genefilter}, \Biocannopkg{hgu95av2.db} and \Biocpkg{edgeR}. The 
+analysis will start by loading package \Rpackage{GSAR}
+
+<<>>=
+library(GSAR)
+@
+
+In what follows we consider two $p$-dimensional vectors of measurements 
+$X=(X_{1} \ldots X_{n_{1}})$ and $Y=(Y_{1} \ldots Y_{n_{2}})$ to be independent 
+and identically distributed with the distribution functions $F_{x}$, $F_{y}$, 
+mean vectors $\bar{X}$, $\bar{Y}$ and $p \times p$ covariance matrices 
+$S_{x}$ and $S_{y}$.
+
+%--------------------------------------------------------------------------
+\section{Minimum spanning trees}
+%--------------------------------------------------------------------------
+\subsection{First MST}
+%--------------------------------------------------------------------------
+The pooled multivariate ($p$-dimensional) observations $X$ and $Y$ can be 
+represented by an edge-weighted graph $G(V,E)$ where $V$ is the set of 
+vertices in the graph with each vertex corresponding to one observation and 
+$E$ is the set of edges connecting pairs of vertices. The complete graph of 
+$X$ and $Y$ has $N=n_{1}+n_{2}$ vertices and $N(N-1)/2$ edges. The weights 
+of the edges are estimated by the Euclidean distances between pairs of 
+observations in $R^{p}$.
+
+The minimum spanning tree (MST) is defined as the acyclic subset 
+$T_{1} \subseteq E$ that connects all vertices in $V$ and whose total length 
+$\sum_{i,j \in T_{1}} d(v_{i},v_{j})$ is minimal. Each vertex in the graph 
+corresponds to a $p$-dimensional observation from $X$ or $Y$. The MST provides 
+a way of ranking the multivariate observations by giving them ranks according 
+to the positions of their corresponding vertices in the MST. The purpose of 
+this ranking is to obtain the strong relationship between observations 
+differences in ranks and their distances in $R^{p}$. The ranking algorithm can 
+be designed specifically to confine a particular alternative hypothesis more 
+detection power \cite{Rahmatallah2012}. Three tests in package \Rpackage{GSAR} 
+are based on MST: \Rfunction{WWtest}, \Rfunction{KStest} and \Rfunction{RKStest}. 
+
+The following example generates a feature set of $20$ features and $40$ 
+observations using the random multivariate normal data generator from package 
+\CRANpkg{MASS}, creates a graph object from the data and obtain its 
+MST using functions from package \CRANpkg{igraph}.
+
+<<echo=FALSE>>=
+options(width=80, digits=3)
+@
+
+<<>>=
+library(MASS)
+set.seed(123)
+nf <- 20
+nobs <- 40
+zero_vector <- array(0,c(1,nf))
+cov_mtrx <- diag(nf)
+dataset <- mvrnorm(nobs, zero_vector, cov_mtrx)
+Wmat <- as.matrix(dist(dataset, method="euclidean", diag=TRUE, 
+upper=TRUE, p=2))
+gr <- graph.adjacency(Wmat, weighted=TRUE, mode="undirected")
+mst <- minimum.spanning.tree(gr)
+@
+%--------------------------------------------------------------------------
+\subsection{MST2 for correlation networks}
+%--------------------------------------------------------------------------
+The second MST is defined as the MST of the reduced graph $G(V,E-T_{1})$. We 
+denote the union of the first and second MSTs by MST2. Each vertex in the MST2 
+has a minimum degree of $2$ if all the $p(p-1)/2$ edges between vertices 
+are considered. 
+
+The correlation (coexpression) network is defined as the edge-weighted graph 
+$G(V,E)$ where $V$ is the set of vertices in the graph with each vertex 
+corresponding to one feature (gene) in the gene set and $E$ is the set of edges 
+connecting pairs of vertices with weights estimated by the correlation 
+distances. The correlation distances are defined by $d_{ij}=1-|r_{ij}|$ where 
+$d_{ij}$ and $r_{ij}$ are respectively the correlation distance and correlation 
+parameter between genes $i$ and $j$ \cite{Rahmatallah2014}. The MST2 of the 
+correlation network gives the minimal set of essential links (interactions) 
+among genes, which we interpret as a network of functional interactions. A gene 
+that is highly correlated with most of the other genes in the gene set tends to 
+occupy a central position and has a relatively high degree in the MST2 because 
+the shortest paths connecting the vertices of the first and second MSTs tend to 
+pass through this gene. In contrast, a gene with low intergene correlations 
+most likely occupies a non-central position in the MST2 and has a degree of 2. 
+This property of the MST2 makes it a valueable graphical visualization tool to 
+examine the full correlation network by highlighting the most highly correlated 
+genes. As an example, the MST2 of the dataset generated in the previous example 
+can be found as follows
+
+<<>>=
+## The input of findMST2 must be a matrix with rows and columns 
+## respectively correspond to genes and columns.
+## Therefore, dataset must be transposed first.
+dataset <- aperm(dataset, c(2,1))
+MST2 <- findMST2(dataset)
+@
+%--------------------------------------------------------------------------
+\section{Multivriate generalizations using MST}
+%--------------------------------------------------------------------------
+\subsection{Wald-Wolfowitz test}
+%--------------------------------------------------------------------------
+The Wald-Wolfowitz (WW) tests the null hypothesis $H_{0}: F_{x}=F_{y}$ against 
+the alternative $H_{1}: F_{x} \neq F_{y}$. When $p=1$, the univariate WW test 
+begins by sorting the observations from two phenotypes in ascending order and 
+labeling each observation by its phenotype. Then, the number of \emph{runs} 
+($R$) is calculated where $R$ is a consecative sequence of identical labels. 
+The test statistic is a function of the number of runs and is asymptotically 
+normally distributed.
+
+The multivariate generalization ($p>1$) suggested in \cite{Friedman1979} is 
+based on the MST. Similar to the univariate case, in the multivariate 
+generalization of WW test, all edges in the MST connecting two vertices 
+(observations) with different labels are removed and the number of the 
+remaining disjoint trees ($R$) is calculated \cite{Friedman1979}. The test 
+statistic is the standardized number of subtrees
+
+$$W = \frac{R-E[R]}{\sqrt{var[R]}}$$
+
+\noindent The null distribution of $W$ is obtained by permuting the 
+observation labels for a large number of times and calculating $W$ for each 
+time and was found to be asymptotically normal. $P$-value is calculated as 
+
+$$P-value = \frac{b + 1}{nperm + 1}$$ 
+
+\noindent where $b$ is the number of permutations giving a more extreme 
+statistic $W$ than the observed test statistic and $nperm$ is the total 
+number of permutations. Function \Rfunction{WWtest} performs this test.
+
+%--------------------------------------------------------------------------
+\subsection{Kolmogorov-Smirnov test}
+%--------------------------------------------------------------------------
+When $p=1$, the univariate Kolmogorov-Smirnov (KS) test begins by sorting 
+the observations from two phenotypes in ascending order. Then observations 
+are ranked and the quantity
+
+$$d_{i} = \frac{r_{i}}{n_{1}} - \frac{s_{i}}{n_{2}}$$
+
+\noindent is calculated where $r_{i}$ ($s_{i}$) is the number of 
+observations in $X$ ($Y$) ranked lower than $i$, $1 \leq i \leq N$. 
+The test statistic is the maximal absolute difference $D = max|d_{i}|$. 
+The null distribution of $D$ is obtained by permuting the observation labels 
+for a large number of times and calculating $D$ for each time. 
+$P$-value is calculated in exactly the same way as before for the WW test.
+
+The ranking scheme can be designed to confine a specific alternative 
+hypothesis more power. Two possibilities are available: First, if the null 
+hypothesis $H_{0}: \bar{X} = \bar{Y}$ is tested against the alternative 
+$H_{1}: \bar{X} \neq \bar{Y}$, the MST is rooted at a node with the largest 
+geodesic distance and the rest of the nodes are ranked according to the 
+\emph{high directed preorder} (HDP) traversal of the tree \cite{Friedman1979}. 
+Function \Rfunction{KStest} performs this test. 
+Second, if the null hypothesis $H_{0}: var(X) = var(Y)$ is tested against 
+the alternative hypothesis $H_{1}: var(X) \neq var(Y)$, the MST is rooted at 
+the node of smallest geodesic distance (centroid) and nodes with largest 
+depths from the root are assigned higher ranks. Hence, ranks are increasing 
+\emph{radially} from the root of the MST. Function \Rfunction{RKStest} performs 
+this test.
+
+The MST found in the previous example is shown in Figure \ref{fig:mst} were 
+vertices from group 1 are in green and vertices from group 2 are in yellow. 
+Ranking vertices in the graph according to the HDP traversal of the MST 
+can be done using function \Rfunction{HDP.ranking}
+
+<<>>=
+HDP.ranking(mst)
+@
+
+<<mst, fig=TRUE, include=FALSE, echo=FALSE, results=verbatim, height=5, width=5>>=
+V(mst)$color <- c(rep("green",20), rep("yellow",20))
+par(mfrow=c(1,1), mar=c(1,1,1,1), oma=c(1,1,1,1))
+plot(mst, vertex.label.cex=1, vertex.size=16)
+@
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{GSAR-mst}
+\end{center}
+\caption{Minimum spanning tree of some random data.}
+\label{fig:mst}
+\end{figure}
+
+%--------------------------------------------------------------------------
+\section{Gene sets net correlations analysis}
+%--------------------------------------------------------------------------
+\subsection{Method}
+%--------------------------------------------------------------------------
+Gene sets net correlations analysis (GSNCA) is a two-sample nonparametric 
+multivariate differential coexpression test that accounts for the correlation 
+structure between features (genes). The test assigns weight factors $w$s to 
+genes under one condition and adjust these weights simultaneously such that 
+equality is achieved between each genes's weight and the sum of its weighted 
+correlations with other genes $r_{ij}$ in a gene set of $p$ genes
+
+$$w_{i} = \sum_{j \neq i} w_{i} r_{ij} \quad \quad 1 \leq i \leq p$$
+
+\noindent The problem is solved as an eigenvector problem with a unique 
+solution which is the eigenvector corresponding to the largest eigenvalue 
+of the genes' correlation matrix (see \cite{Rahmatallah2014} for details). 
+
+The test statistic $w_{GSNCA}$ is given by the first norm between the scaled 
+weight vectors $w^{(1)}$ and $w^{(2)}$ (each vector is multiplied by its 
+norm) between two conditions
+
+$$w_{GSNCA} = \sum_{i=1}^{p} \left| w_{i}^{(1)} - w_{i}^{(2)} \right|$$
+
+This test statistic tests the null hypothesis $H_{0}: w_{GSNCA}=0$ against 
+the alternative $H_{1}: w_{GSNCA} \neq 0$. The performance of this test was 
+thoroughly examind in \cite{Rahmatallah2014}. $P$-value is calculated in 
+exactly the same way as before for the WW test.
+
+%--------------------------------------------------------------------------
+\subsection{The problem of zero standard deviation}
+%--------------------------------------------------------------------------
+In rare cases some features in a set may have constant or nearly constant 
+levels across the samples in one or both conditions. Such situation may arise 
+for RNA-Seq counts when some genes with many zero counts are allowed. 
+This results in a zero or a tiny standard deviation. Such case produces an 
+error in command \Rfunction{cor} used to compute the correlations between 
+features. To avoid this situation, standard deviations are checked in advance 
+(default behaviour) and if any is found below a specified minimum limit 
+(default is \Robject{1e-3}), the execution stops and an error message is 
+returned indicating the the number of feature causing the problem (if only one 
+the index of that feature is given too). To perform the GSNCA for such set, 
+the features causing the problem must be excluded from the set.
+
+If a feature has nearly a constant level for some samples under both 
+conditions, permuting sample labels may group such samples under one condition 
+by chance and hence produce a standard deviation smaller than the minimum 
+limit. To allow the test to skip such permutations without causing excessive 
+delay, an upper limit for the number of allowed skips can be set (default 
+is $10$). If the upper limit is exceeded, an error message is returned.
+
+If the user is certain that the tested feature sets contain no feature with 
+nearly equal levels over many samples (such as the case with filtered 
+microarray data), the checking for tiny standard deviations can be skipped 
+in order to reduce the execution time.
+
+%--------------------------------------------------------------------------
+\section{Application to RNA-Seq counts}
+%--------------------------------------------------------------------------
+RNA-Seq data consists of integer counts usually represented by the discrete 
+Poisson or negative Binomial distributions. Therefore, tests designed for 
+microarray data (which follows the continuous normal distribution) can not 
+be applied directly to RNA-Seq data. The nonparametric tests presented in 
+package \Rpackage{GSAR} need no prior distributional assumptions and can be 
+applied to RNA-Seq counts given that proper normalization is used. The 
+normalization should accounts for the between-samples differences (library 
+size or sequencing depth) and within-sample differences (mainly gene length). 
+The \emph{reads per kilobase per million} (RPKM) is such example. However, 
+due to some limitations, two points must be declared:
+\begin{itemize}
+  \item The variance of both the Poisson and negative Bionomial distributions, 
+used to model count data, is a function of their mean. Therefore, using the 
+radial KS test (\Rfunction{RKStest}) to detect pathways with differential 
+variance for RNA-Seq counts is not possible.
+  \item RNA-Seq datasets often have many zero counts, therefore, the problem 
+of genes having zero standard deviations in a pathway is frequent and prevent 
+calculating the correlation coefficients necessary to perform the GSNCA. 
+One possible solution is to discard any genes that may have zero or tiny 
+standard deviation and apply GSNCA to the remaining genes in the pathway. 
+Since count data demonstrate much higher differences between genes than 
+microarrays, Spearman's correlation coefficient is preferred 
+(set \Robject{cor.method} to \Robject{"spearman"}).
+\end{itemize}
+
+%--------------------------------------------------------------------------
+\section{Case studies}
+%--------------------------------------------------------------------------
+This Section illustrates the typical procedure for applying the methods 
+available in package \Rpackage{GSAR} to perform GSA. Two microarray and 
+one RNA-Seq datasets are used.
+%--------------------------------------------------------------------------
+\subsection{The p53 dataset}
+%--------------------------------------------------------------------------
+\subsubsection{Introduction}
+%--------------------------------------------------------------------------
+p53 is a major tumor suppressor protein. The p53 dataset comprises $50$ 
+samples of the NCI-60 cell lines differentiated based on the status of the 
+TP53 gene: $17$ cell lines carrying wild type (WT) TP53 and $33$ cell lines 
+carrying mutated (MUT) TP53 \cite{Olivier2002, Subramanian2005}. 
+Transcriptional profiles obtained from microarrays of platform hgu95av2 
+are available from the Broad Institute's website 
+(\url{http://www.broadinstitute.org/gsea/datasets.jsp}).\\
+
+%--------------------------------------------------------------------------
+\subsubsection{Filtering and normalization}
+%--------------------------------------------------------------------------
+A preprocessed version of p53 dataset is available in package \Rpackage{GSAR} 
+as a \Rclass{matrix} object. The p53 dataset was dowloaded from the Broad 
+Institute's website. Probe level intensities were quantile normalized and 
+transformed to the log scale using $\log_{2}(1+intensity)$. Probes originally 
+had Affymetrix identifiers which are mapped to unique gene symbol identifiers. 
+Probes without mapping to entrez and gene symbol identifiers were discarded. 
+Probes with duplicate intensities were assessed and the probe with the largest 
+absolute value of t-statistic between WT and MUT conditions was selected as 
+the gene match. Finally, genes were assigned gene symbol identifiers and 
+columns were assigned names indicating weither they belong to WT or MUT group. 
+The columns were sorted such that the first $17$ columns are WT samples and 
+the next $33$ columns are the MUT samples. This processed version of the 
+p53 dataset was used in the analysis presented in \cite{Rahmatallah2014}.\\
+
+%--------------------------------------------------------------------------
+\subsubsection{GSA}
+%--------------------------------------------------------------------------
+GSA are performed on selected C2 curated gene sets (pathways) of the 
+\emph{molecular signatures database} (MSigDB) $3.0$ \cite{Liberzon2011}. 
+This list of gene sets is available in package \Biocexptpkg{GSVAdata}. We start 
+by loading the required data
+
+<<>>=
+library(GSVAdata)
+data(p53DataSet)
+data(c2BroadSets)
+@
+
+\noindent \Robject{c2BroadSets} is an object of class 
+\Rclass{GeneSetCollection} supported by package \Biocpkg{GSEABase}. 
+The genes in the \Robject{c2BroadSets} object have entrez identifiers. 
+Package \Biocannopkg{org.Hs.eg.db} is used to convert the entrez identifiers to 
+gene symbol identifiers. Genes without unique mapping to gene symbol 
+identifiers or that do not exist in the p53 dataset are discarded from the C2 
+pathways. Finally, we keep only pathways with $10 \leq p \leq 500$ where $p$ 
+is the number of genes remaining in the pathways after filtering steps.
+
+<<eval=TRUE>>=
+library(org.Hs.eg.db)
+library(GSEABase)
+C2 <- as.list(geneIds(c2BroadSets))
+len <- length(C2)
+genes.entrez <- unique(unlist(C2))
+genes.symbol <- array("",c(length(genes.entrez),1))
+x <- org.Hs.egSYMBOL
+mapped_genes <- mappedkeys(x)
+xx <- as.list(x[mapped_genes])
+for (ind in 1:length(genes.entrez)){
+    if (length(xx[[genes.entrez[ind]]])!=0)
+        genes.symbol[ind] <- xx[[genes.entrez[ind]]]
+                                   }
+## discard genes with no mapping to gene symbol identifiers
+genes.no.mapping <- which(genes.symbol == "")
+if(length(genes.no.mapping) > 0){
+    genes.entrez <- genes.entrez[-genes.no.mapping]
+    genes.symbol <- genes.symbol[-genes.no.mapping]
+                                }
+names(genes.symbol) <- genes.entrez
+## discard genes in C2 pathways which do not exist in p53 dataset
+p53genes <- rownames(p53DataSet)
+remained <- array(0,c(1,len))
+for (k in seq(1, len, by=1)) {
+    remained[k] <- sum((genes.symbol[C2[[k]]] %in% p53genes) & 
+    (C2[[k]] %in% genes.entrez))
+                             }
+C2 <- C2[(remained>=10)&&(remained<=500)]
+pathway.names <- names(C2)
+c2.pathways <- list()
+for (k in seq(1, length(C2), by=1)) {
+    selected.genes <- which(p53genes %in% genes.symbol[C2[[k]]])
+    c2.pathways[[length(c2.pathways)+1]] <- p53genes[selected.genes]
+                                    }
+names(c2.pathways) <- pathway.names
+path.index <- which(names(c2.pathways) == "LU_TUMOR_VASCULATURE_UP")
+@
+
+\noindent \Robject{c2.pathways} is now a list with each entry being a named 
+list of the genes (gene symbol identifiers) forming one C2 pathway. To 
+demonstrate the use of different tests, we consider the interesting C2 pathway 
+LU TUMOR VASCULATURE UP used in \cite{Rahmatallah2014} to demonstrate the GSNCA. 
+
+<<>>=
+target.pathway <- p53DataSet[c2.pathways[["LU_TUMOR_VASCULATURE_UP"]],]
+group.label <- c(rep(1,17), rep(2,33))
+WWresult <- WWtest(target.pathway, group.label)
+KSresult <- KStest(target.pathway, group.label)
+RKSresult <- RKStest(target.pathway, group.label)
+GSNCAresult <- GSNCAtest(target.pathway, group.label)
+WWresult$p.value
+KSresult$p.value
+RKSresult$p.value
+GSNCAresult$p.value
+@
+
+\noindent The questions addressed by these tests were the identification of 
+gene sets expressed with different distributions, means, variances or 
+correlation structure between two conditions. At a significance level $0.05$, 
+the targeted pathway shows a statistical evidence of being differentially 
+coexpressed only. The MST2s of the correlation network for WT and MUT groups 
+are shown in Figure \ref{fig:mst2plot}, generated by function 
+\Rfunction{plotMST2.pathway}
+
+<<mst2plot, fig=TRUE, include=FALSE, echo=TRUE, results=verbatim, height=7, width=7>>=
+plotMST2.pathway(p53DataSet[c2.pathways[[path.index]],],
+group=c(rep(1,17), rep(2,33)), name="LU_TUMOR_VASCULATURE_UP", 
+legend.size=0.9, label.size=1.2, cor.method="pearson")
+@
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=\textwidth]{GSAR-mst2plot}
+\end{center}
+\caption{MST2s of LU TUMOR VASCULATOR UP correlation network, 
+(left) WT (right) MUT.}
+\label{fig:mst2plot}
+\end{figure}
+
+\noindent The targeted pathway comprises genes over-expressed in ovarian cancer 
+endothelium \cite{Lu2007}. Gene TNFAIP6 (tumor necrosis factor, 
+$\alpha$-induced protein 6) identified by GSNCA as a hub gene for WT group 
+and visualized using MST2 (Figure \ref{fig:mst2plot}, left panel) was found 
+$29.1$-fold over-expressed in tumor endothelium in the original study and was 
+suggested to be specific for ovarian cancer vasculature. This indicates that 
+gene TNFAIP6 can be an important regulator of ovarian cancer, and identifying 
+it as a hub by GSNCA enhances the original observation. When p53 is mutated 
+(Figure \ref{fig:mst2plot}, right panel) the hub gene is VCAN, containing p53 
+binding site and its expression is highly correlated with p53 dosage 
+\cite{Yoon2002}. Therefore, both hub genes provide adequate information about 
+the underlying biological processes.
+
+If testing all the gene sets in the \Robject{c2.pathways} list is desired, a 
+loop can be constructed to extract one pathway at a time and perform the 
+desired tests similar to what has been shown above.
+
+%--------------------------------------------------------------------------
+\subsection{The ALL dataset}
+%--------------------------------------------------------------------------
+\subsubsection{Introduction}
+%--------------------------------------------------------------------------
+This dataset consists of microarrays (platform hgu95av2) from $128$ different 
+individuals with acute lymphoblastic leukemia (ALL). There are $95$ samples 
+with B-cell ALL \cite{Chiaretti2004} and $33$ with T-cell ALL 
+\cite{Chiaretti2005}. We consider B-cell type only and compare tumors carrying 
+the BCR/ABL mutations ($37$ samples) to those with no cytogenetic 
+abnormalities (42 samples). The Bioconductor package \Biocexptpkg{ALL} provides 
+the ALL dataset with samples normalized using the 
+\emph{robust multiarray analysis} (RMA) procedure \cite{Irizarry2003}.\\
+
+%--------------------------------------------------------------------------
+\subsubsection{Filtering and normalization}
+%--------------------------------------------------------------------------
+Affymetrix probe identifiers were mapped to unique gene symbol identifiers. 
+Probes without mapping to entrez and gene symbol identifiers were discarded. 
+Probes with duplicate intensities were assessed and the probe with the largest 
+absolute value of t-statistic between normal (NEG) and mutation (MUT) 
+conditions was selected as the gene match. Finally, genes were assigned gene 
+symbol identifiers.\\
+
+<<>>=
+library(Biobase)
+library(genefilter)
+library(annotate)
+library(hgu95av2.db)
+library(ALL)
+data(ALL)
+bcell = grep("^B", as.character(ALL$BT))
+types = c("NEG", "BCR/ABL")
+moltyp = which(as.character(ALL$mol.biol) %in% types)
+ALL_bcrneg = ALL[, intersect(bcell, moltyp)]
+ALL_bcrneg$mol.biol = factor(ALL_bcrneg$mol.biol)
+ALL_bcrneg$BT = factor(ALL_bcrneg$BT)
+nBCR <- sum(ALL_bcrneg$mol.biol == "BCR/ABL")
+nNEG <- sum(ALL_bcrneg$mol.biol == "NEG")
+BCRsamples <- which(ALL_bcrneg$mol.biol == "BCR/ABL")
+NEGsamples <- which(ALL_bcrneg$mol.biol == "NEG")
+ALL_bcrneg <- ALL_bcrneg[,c(BCRsamples,NEGsamples)]
+platform <- annotation(ALL_bcrneg)
+annType <- c("db", "env")
+entrezMap <- getAnnMap("ENTREZID", annotation(ALL_bcrneg), 
+type=annType, load=TRUE)
+symbolMap <- getAnnMap("SYMBOL", annotation(ALL_bcrneg), 
+type=annType, load=TRUE)
+filtered <- nsFilter(ALL_bcrneg, require.entrez=TRUE, 
+remove.dupEntrez=FALSE, require.symbol=TRUE, require.GOBP=FALSE, 
+var.func=IQR, var.filter=FALSE, var.cutof=0.5)
+filtered.set <- filtered$eset
+probe.names <- featureNames(filtered.set)
+rr <- rowttests(filtered.set, as.factor(ALL_bcrneg$mol.biol), tstatOnly=TRUE)
+fL <- findLargest(probe.names, abs(rr$statistic), platform)
+filtset2 <- filtered.set[fL,]
+affymetrix.probe.names <- featureNames(filtset2)
+gene.symbols <- lookUp(affymetrix.probe.names, platform, "SYMBOL")
+featureNames(filtset2) <- gene.symbols
+ALLdataset <- exprs(filtset2)
+@
+
+%--------------------------------------------------------------------------
+\subsubsection{Selected gene set}
+%--------------------------------------------------------------------------
+Lets examine the C2 pathway KEGG CHRONIC MYELOID LEUKEMIA, knowm to be 
+specifically associated with the BCR/ABL mutation. This pathway has many 
+BCR/ABL-related genes and hence expected to show difference between NEG 
+and MUT conditions.
+
+<<>>=
+KCMLpathway <- ALLdataset[c2.pathways[["KEGG_CHRONIC_MYELOID_LEUKEMIA"]],]
+group.label <- c(rep(1,37), rep(2,42))
+WWresult <- WWtest(KCMLpathway, group.label)
+KSresult <- KStest(KCMLpathway, group.label)
+RKSresult <- RKStest(KCMLpathway, group.label)
+GSNCAresult <- GSNCAtest(KCMLpathway, group.label)
+WWresult$p.value
+KSresult$p.value
+RKSresult$p.value
+GSNCAresult$p.value
+@
+
+\noindent At a significance level $0.05$, $p$-values show statistical evidences 
+that the pathway is differentially coexpressed and has different distributions 
+between BCR/ABL and NEG conditions. The MST2s of the correlation network for 
+BCR/ABL and NEG groups are shown in Figure \ref{fig:KCMLplot}, generated by 
+function \Rfunction{plotMST2.pathway}
+
+<<KCMLplot, fig=TRUE, include=FALSE, echo=TRUE, results=verbatim, height=8, width=8>>=
+plotMST2.pathway(KCMLpathway, group.label, name="KEGG_CHRONIC_MYELOID_LEUKEMIA", 
+legend.size=0.9, label.size=1, cor.method="pearson")
+@
+
+\begin{figure}[!h]
+\begin{center}
+\includegraphics[width=\textwidth]{GSAR-KCMLplot}
+\end{center}
+\caption{MST2s of pathway KEGG CHRONIC MYELOID LEUKEMIA correlation network, 
+(left) BCR/ABL (right) NEG.}
+\label{fig:KCMLplot}
+\end{figure}
+
+%--------------------------------------------------------------------------
+\subsection{The Pickrell dataset}
+%--------------------------------------------------------------------------
+\subsubsection{Introduction}
+%--------------------------------------------------------------------------
+The Pickrell dataset of sequenced cDNA libraries generated from $69$ 
+lymphoblastoid cell lines derived from unrelated Yoruban Nigerian individuals 
+(YRI) is part of the HapMap project. The original experimental data was 
+published by \cite{Pickrell2010}. Package \Biocexptpkg{tweeDEseqCountData} 
+provides the table of counts for this dataset in the expression set object 
+\Robject{pickrell.eset}. This table of counts corresponds to the one in 
+the ReCount repository available at 
+\url{http://bowtie-bio.sourceforge.net/recount}. Details on the 
+pre-processing steps to obtain this table of counts from the raw reads are 
+provided by \cite{Frazee2011}.
+
+Package \Biocexptpkg{tweeDEseqCountData} provides annotation data for the human 
+genes forming the table in \Robject{pickrell.eset} as a data frame object 
+\Robject{annotEnsembl63}. \Biocexptpkg{tweeDEseqCountData} also provides two 
+lists of genes (gene sets) with documented sex-specific expression and 
+occurring within the set of genes that form the table of counts in 
+\Robject{pickrell.eset}. The first is a set of genes that are located on 
+the male-specific region of chromosome Y, and therefore are over-expressed 
+in males (\Robject{msYgenes}). 
+The second is a set of genes, that are escaping X-chromosome inactivation, and 
+therefore are overexpressed in females (\Robject{XiEgenes}). These two sets 
+are useful in serving as true positives when GSA are conducted between males 
+and females to detect gene sets that are differentially expressed.  
+
+<<>>=
+library(tweeDEseqCountData)
+data(pickrell)
+data(annotEnsembl63)
+data(genderGenes)
+gender <- pickrell.eset$gender
+pickrell.eset
+sampleNames(pickrell.eset)[gender == "male"]
+sampleNames(pickrell.eset)[gender == "female"]
+head(annotEnsembl63)
+length(msYgenes)
+length(XiEgenes)
+@
+
+\noindent We will also extract the set of all X-linked genes that are not 
+escaping inactivation (\Robject{Xigenes}) to use it as a true negative 
+set (not differentially expressed)
+
+<<>>=
+allXgenes <- rownames(annotEnsembl63)[annotEnsembl63$Chr == "X"]
+Xigenes <- allXgenes[!(allXgenes %in% XiEgenes)]
+length(Xigenes)
+@
+
+%--------------------------------------------------------------------------
+\subsubsection{Filtering and normalization}
+%--------------------------------------------------------------------------
+Any transcript without entrez identifier or gene length information is 
+discarded. To consider only expressed genes in the analysis, genes with an 
+average \emph{count per million} (cpm) less than $0.1$ are discarded.\\
+
+<<>>=
+library(edgeR)
+gene.indices <- which(!(is.na(annotEnsembl63$EntrezID) | 
+is.na(annotEnsembl63$Length)))
+PickrellDataSet <- exprs(pickrell.eset)
+PickrellDataSet <- PickrellDataSet[gene.indices,]
+genes.length <- annotEnsembl63$Length[gene.indices]
+cpm.matrix <- cpm(PickrellDataSet)
+cpm.means <- rowMeans(cpm.matrix)
+cpm.filter <- which(cpm.means > 0.1)
+PickrellDataSet <- PickrellDataSet[cpm.filter,]
+genes.length <- genes.length[cpm.filter]
+rpkm.set <- rpkm(PickrellDataSet, genes.length)
+rpkm.set <- log2(1 + rpkm.set)
+@
+
+%--------------------------------------------------------------------------
+\subsubsection{Testing selected pathways}
+%--------------------------------------------------------------------------
+Any gene in \Robject{msYgenes}, \Robject{XiEgenes}, or \Robject{Xigenes} 
+but not found in the filtered dataset is discarded. Then, the remaining 
+gender-related genes in \Robject{msYgenes} and \Robject{XiEgenes} are combined 
+into one gene set (\Robject{XYgenes}).
+
+<<>>=
+gene.space <- rownames(rpkm.set)
+msYgenes <- msYgenes[msYgenes %in% gene.space]
+XiEgenes <- XiEgenes[XiEgenes %in% gene.space]
+Xigenes <- Xigenes[Xigenes %in% gene.space]
+XYgenes <- c(msYgenes, XiEgenes)
+length(XYgenes)
+length(Xigenes)
+@
+
+\noindent The gender-related gene set \Robject{XYgenes} was found 
+differentially expressed with high significance
+
+<<>>=
+XYpathway <- rpkm.set[XYgenes,]
+group.label.pickrell <- (gender == "male") + 1
+WWresult <- WWtest(XYpathway, group.label.pickrell)
+KSresult <- KStest(XYpathway, group.label.pickrell)
+WWresult$p.value
+KSresult$p.value
+@
+
+\noindent while gene set \Robject{Xigenes} showed no such evidence as expected
+
+<<>>=
+Xipathway <- rpkm.set[Xigenes,]
+WWresult <- WWtest(Xipathway, group.label.pickrell)
+KSresult <- KStest(Xipathway, group.label.pickrell)
+WWresult$p.value
+KSresult$p.value
+@
+
+\noindent To apply the GSNCA, genes with tiny standard deviations must be 
+filtered out first
+
+<<>>=
+nrow(XYpathway)
+nrow(Xipathway)
+tiny.sd.XY.female <- which(apply(XYpathway[, group.label.pickrell == 1], 1, "sd") < 1e-3)
+tiny.sd.XY.male <- which(apply(XYpathway[, group.label.pickrell == 2], 1, "sd") < 1e-3)
+tiny.sd.Xi.female <- which(apply(Xipathway[, group.label.pickrell == 1], 1, "sd") < 1e-3)
+tiny.sd.Xi.male <- which(apply(Xipathway[, group.label.pickrell == 2], 1, "sd") < 1e-3)
+length(tiny.sd.XY.female)
+length(tiny.sd.XY.male)
+length(tiny.sd.Xi.female)
+length(tiny.sd.Xi.male)
+apply(XYpathway[, group.label.pickrell == 1], 1, "sd")
+if(length(tiny.sd.XY.male) > 0) XYpathway <- XYpathway[-tiny.sd.XY.male,]
+if(length(tiny.sd.XY.female) > 0) XYpathway <- XYpathway[-tiny.sd.XY.female,]
+if(length(tiny.sd.Xi.male) > 0) Xipathway <- Xipathway[-tiny.sd.Xi.male,]
+if(length(tiny.sd.Xi.female) > 0) Xipathway <- Xipathway[-tiny.sd.Xi.female,]
+nrow(XYpathway)
+nrow(Xipathway)
+@
+
+\noindent Note that two genes (\Robject{ENSG00000183878} and 
+\Robject{ENSG00000198692}) in \Robject{XYpathway} had zero standard deviations 
+for female samples and were filtered out from \Robject{XYpathway}. These two 
+genes are Y-liked genes and expected to have many zero counts for female 
+samples. Although this filtering step increases the chances of success in 
+performing GSNCA, the existence of many zero counts dispersed over many 
+samples for one or more genes many still cause a problem when a sample 
+permutation groups many zero counts under one condition. The parameter 
+\Robject{max.skip} in function \Rfunction{GSNCAtest} allows some tolerance by 
+assigning the maximum number of skipped permutations allowed to avoid the few 
+ones causing the problem. This solution may work or fail depending on the 
+proportion of zero counts in the data. For example, assigning 
+\Robject{max.skip} to $100$ or more solved the problem for 
+\Robject{XYpathway}, but it did not for \Robject{Xipathway}.
+
+%--------------------------------------------------------------------------
+\section{Session info}
+%--------------------------------------------------------------------------
+<<>>=
+sessionInfo()
+@
+
+\bibliographystyle{unsrturl}
+\bibliography{GSAR}
+\end{document}

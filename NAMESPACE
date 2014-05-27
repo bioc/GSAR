@@ -1,0 +1,11 @@
+export(
+      HDP.ranking,
+      WWtest,
+      KStest,
+      RKStest,
+      GSNCAtest,
+      findMST2,
+      plotMST2.pathway
+      )
+
+import(igraph)
