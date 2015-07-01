@@ -36,12 +36,12 @@ any feature with a standard deviation less than \code{min.sd}.}
 that accounts for the correlation structure between features (genes).
 The test assigns weight factors to features under one condition and adjust 
 these weights simultaneously such that equality is achieved between each 
-feature's weight and the sum of its weighted correlations with other features 
-in the feature set. The problem is solved as an eigenvector problem with a 
-unique solution (see Rahmatallah et. al. 2014 for details). The test statistic 
-\eqn{w_{GSNCA}} is given by the first norm between the scaled weight vectors
-\eqn{w^{(1)}} and \eqn{w^{(2)}} (each vector is multiplied by its norm) 
-between two conditions
+feature's weight and the sum of its weighted absolute correlations with other 
+features in the feature set. The problem is solved as an eigenvector problem 
+with a unique solution (see Rahmatallah et. al. 2014 for details). The test 
+statistic \eqn{w_{GSNCA}} is given by the first norm between the scaled 
+weight vectors \eqn{w^{(1)}} and \eqn{w^{(2)}} (each vector is multiplied 
+by its norm) between two conditions
 
 \deqn{w_{GSNCA} = \sum_{i=1}^{p} | w_{i}^{(1)} - w_{i}^{(2)} |}
 
@@ -55,16 +55,15 @@ test statistic for each. P-value is calculated as
 of permutations giving a more extreme statistic than the observed test 
 statistic.
 
-In some cases (especially RNA-Seq count data), a feature or more may have a 
-constant or nearly constant level across the samples in one or both conditions 
-(such as the case of zero counts for a gene). 
-This results in a zero or a tiny standard deviation for one or more features. 
+In the case of RNA-seq count data, some non-expressed genes may have zero 
+counts across the samples under one or two conditions. Such situation 
+results in zero or tiny standard deviation for one or more features. 
 Such case produces an error in command \code{cor} used to compute the 
 correlation coefficients between features. 
 To avoid this situation, standard deviations are checked in advance when 
 \code{check.sd} is \code{TRUE} (default) and if any is found below the minimum 
 limit \code{min.sd} (default is \code{1e-3}), the execution stops and an error 
-message is returned indicating the the number of feature causing the problem 
+message is returned indicating the number of feature causing the problem 
 (if only one the index of that feature is given too). 
 If a feature has nearly a constant level for some samples under both 
 conditions, permuting sample labels may group such samples under one condition 

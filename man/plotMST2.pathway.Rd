@@ -12,11 +12,12 @@ feature set under both conditions side-by-side and highlights hub nodes to
 facilitate a visual comparison.}
 
 \usage{plotMST2.pathway(object, group, name=NULL, legend.size=1, label.size=1, 
-cor.method="pearson", min.sd=1e-3)}
+cor.method="pearson", min.sd=1e-3, return.weights=FALSE)}
 
 \arguments{
   \item{object}{a numeric matrix with columns and rows respectively 
-corresponding to samples and features.}
+corresponding to samples and features. Gene names are provided to this 
+function as the rownames of this matrix.}
   \item{group}{a numeric vector indicating group associations for samples. 
 Possible values are 1 and 2.}
   \item{name}{an optional character string giving the name of the feature set 
@@ -31,6 +32,14 @@ coefficient is to be computed. Possible values are \dQuote{\code{pearson}}
   \item{min.sd}{the minimum allowed standard deviation for any feature. If 
 any feature has a standard deviation smaller than \code{min.sd} the execution 
 stops and an error message is returned.}
+  \item{return.weights}{logical. Default value is FALSE. If the weight 
+factors aasigned to the genes by the GSNCA method are desired, setting 
+this parameter to TRUE returns the weight factors in a matrix with 2 columns 
+(for class 1 and class 2) and number of rows equal to the number of genes 
+in the gene set. If the \code{rownames} of \code{object} are provided, then 
+they will be used as \code{rownames} for the returned matrix. If the 
+\code{rownames} of \code{object} are abscent, node labels will be set to 
+\code{as.character(c(1:nrow(object)))}.}
 }
 
 \details{This is a wrapper plotting function for the convenience of users. It 

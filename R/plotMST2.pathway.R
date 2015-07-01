@@ -1,6 +1,6 @@
 plotMST2.pathway <- 
     function(object, group, name=NULL, legend.size=1, 
-        label.size=1, cor.method="pearson", min.sd=1e-3)
+        label.size=1, cor.method="pearson", min.sd=1e-3, return.weights=FALSE)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features 
@@ -61,11 +61,14 @@ plotMST2.pathway <-
     p2 <- matrix(abs(e2$vectors[,1]))
     p1 <- p1 * norm(p1)
     p2 <- p2 * norm(p2)
+    colnames(p1) <- "class1"
+    colnames(p2) <- "class2"
+    rownames(p1) <- rownames(p2) <- gnames
     major1.val <- max(p1)
     major2.val <- max(p2)
     major1.ind <- which.max(p1)
     major2.ind <- which.max(p2)
-    names(p1) <- names(p2) <- gnames
+#    names(p1) <- names(p2) <- gnames
     MST2.group1 <- findMST2(object[,c(1:nv1)], cor.method, min.sd, TRUE)
     MST2.group2 <- findMST2(object[,c((nv1+1):nv)], cor.method, min.sd, TRUE)
     V(MST2.group1)$color <- V(MST2.group2)$color <- "red4"
@@ -113,4 +116,6 @@ plotMST2.pathway <-
 
     mtext(paste("There are ", length(gnames)," genes in this pathway", sep=""), 
         cex=0.9, outer=TRUE, line=0)
+
+if(return.weights==TRUE) return(cbind(p1,p2))
 }

@@ -2,10 +2,19 @@
 \title{GSAR News}
 \encoding{UTF-8}
 
-\section{Version 1.0.0}{\itemize{
+\section{Version 1.4.0}{\itemize{
 
 \item
-This is the first version of the R package GSAR.
+A new feature was added to function plotMST2.pathway. The weight vectors for the genes under two classes can be returned as a 2-column matrix.
+
+\item
+Function HDP.ranking is modified to accomodate the changes in package igraph.
+
+\item
+A few changes in the notations and the codes of the case studies used in the vignette.
+}}
+
+\section{Version 1.0.0}{\itemize{
 
 \item
 The package provides two-sample nonparametric multivariate statistical methods to test specific alternative hypotheses 

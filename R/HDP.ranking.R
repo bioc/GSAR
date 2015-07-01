@@ -2,12 +2,16 @@ HDP.ranking <-
     function(mst)
 {
     rr <- farthest.nodes(mst, directed=FALSE, unconnected=TRUE)
-    root <- floor(rr[1])
+    if(is.list(rr)) root <- floor(as.numeric(rr$vertices[1]))
+    if(is.numeric(rr)) root <- floor(rr[1])
     terminal_nodes <- which(igraph::degree(mst) == 1)
     ltn <- length(terminal_nodes) - 1
     tn <- terminal_nodes
     tn <- tn[tn != root]
-    sp <- get.shortest.paths(mst, root, to=tn)$vpath
+    if(is.list(rr)) 
+    sp <- all_shortest_paths(mst, from=root, to=tn, mode="all")$res
+    if(is.numeric(rr))
+    sp <- get.shortest.paths(mst, from=root, to=tn, mode="all")$vpath
     path_len <- shortest.paths(mst)
     break_ties <- path_len[root, tn] / max(path_len)
     depth <- array(0, c(1,ltn))
@@ -21,7 +25,9 @@ HDP.ranking <-
     for (col in seq(1,md,by=1))
     {
         for(row in seq(1,ltn,by=1))
-            col_nodes[row] <- sp[[row]][col]
+            if(length(sp[[row]])>=col) 
+			col_nodes[row] <- sp[[row]][col] 
+				else col_nodes[row] <- 0
     fcn <- factor(col_nodes)
     collevels <- levels(fcn)
     llev <- length(collevels)
@@ -55,5 +61,5 @@ HDP.ranking <-
             }
         }
     }
-    KSranks
+    as.numeric(KSranks)
 }
