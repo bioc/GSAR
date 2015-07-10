@@ -5,7 +5,7 @@
 
 \title{\textbf{Gene Set Analysis in R -- the GSAR Package}}
 \author{Yasir Rahmatallah$^1$ and Galina Glazko$^2$\\
-Division of Biomedical Informatics,\\
+Department of Biomedical Informatics,\\
 University of Arkansas for Medical Sciences,\\
 Little Rock, AR 72205.\\
 \texttt{$^1$yrahmatallah@uams.edu, $^2$gvglazko@uams.edu}}
@@ -39,11 +39,11 @@ implements the methods proposed in
 \cite{Rahmatallah2014, Rahmatallah2012, Friedman1979} which were thoroughly 
 tested using simulated and microarray datasets in \cite{Rahmatallah2014} and 
 \cite{Rahmatallah2012}. These methods (except \Rfunction{RKStest}) can also be 
-applied to RNA-Seq count data given that proper normalization which accounts 
+applied to RNA-seq count data given that proper normalization which accounts 
 for both the within-sample differences (gene lengths) and between-samples 
 differences (library sizes) is used. This vignette begins with a brief overview 
 of the theoretical concepts behind the methods, and then gives a number of 
-fully worked case studies, from microarrays to RNA-Seq count data.
+fully worked case studies, from microarrays to RNA-seq count data.
 
 Many methodologies for testing the differential expression of gene sets have 
 been suggested and are collectively named gene set analysis (GSA). GSA can be 
@@ -73,11 +73,11 @@ class \CRANpkg{igraph} for visualizing the generated graphs.
 
 Data packages \Biocexptpkg{ALL}, \Biocexptpkg{GSVAdata} and 
 \Biocexptpkg{tweeDEseqCountData} which contain datasets are necessary for 
-running the examples and case studies in this document. Package \Rpackage{GSAR} 
+running the examples and case studies in this vignette. Package \Rpackage{GSAR} 
 itself contains one preprocessed dataset to illustrate the analyses, which was 
 employed in the article introducing the gene sets net correlations analysis 
 (GSNCA) method \cite{Rahmatallah2014}. Other packages necessary for running 
-the examples and case studies in this document are packages \CRANpkg{MASS}, 
+the examples and case studies in this vignette are packages \CRANpkg{MASS}, 
 \Biocpkg{GSEABase}, \Biocpkg{annotate}, \Biocannopkg{org.Hs.eg.db}, 
 \Biocpkg{genefilter}, \Biocannopkg{hgu95av2.db} and \Biocpkg{edgeR}. The 
 analysis will start by loading package \Rpackage{GSAR}
@@ -86,10 +86,17 @@ analysis will start by loading package \Rpackage{GSAR}
 library(GSAR)
 @
 
-In what follows we consider two $p$-dimensional vectors of measurements 
-$X=(X_{1} \ldots X_{n_{1}})$ and $Y=(Y_{1} \ldots Y_{n_{2}})$ to be independent 
-and identically distributed with the distribution functions $F_{x}$, $F_{y}$, 
-mean vectors $\bar{X}$, $\bar{Y}$ and $p \times p$ covariance matrices 
+In what follows we introduce the following notations. Consider two different 
+biological phenotypes, with $n_{1}$ samples of measurements for the first and 
+$n_{2}$ samples of the same measurements for the second. Each sample is a 
+$p$-dimensional vector of measurements of $p$ genes (constituting a single 
+gene set). Hence, the data for the first phenotype consists of a 
+$p \times n_{1}$ matrix and for the second phenotype consists of a 
+$p \times n_{2}$ matrix, where rows are genes and columns are samples. The 
+samples of the first and second phenotypes are respectively represented by two 
+random vectors $X$ and $Y$. Let $X$ and $Y$ be independent and identically 
+distributed with the distribution functions $F_{x}$, $F_{y}$, $p$-dimensional 
+mean vectors $\bar{X}$ and $\bar{Y}$, and $p \times p$ covariance matrices 
 $S_{x}$ and $S_{y}$.
 
 %--------------------------------------------------------------------------
@@ -99,11 +106,11 @@ $S_{x}$ and $S_{y}$.
 %--------------------------------------------------------------------------
 The pooled multivariate ($p$-dimensional) observations $X$ and $Y$ can be 
 represented by an edge-weighted graph $G(V,E)$ where $V$ is the set of 
-vertices in the graph with each vertex corresponding to one observation and 
-$E$ is the set of edges connecting pairs of vertices. The complete graph of 
-$X$ and $Y$ has $N=n_{1}+n_{2}$ vertices and $N(N-1)/2$ edges. The weights 
-of the edges are estimated by the Euclidean distances between pairs of 
-observations in $R^{p}$.
+vertices in the graph. Each vertex in the sample network corresponds to one 
+observation (sample) and $E$ is the set of edges connecting pairs of vertices. 
+The complete graph of $X$ and $Y$ has $N=n_{1}+n_{2}$ vertices and $N(N-1)/2$ 
+edges. The weights of the edges are estimated by the Euclidean distances between 
+pairs of observations (samples) in $R^{p}$.
 
 The minimum spanning tree (MST) is defined as the acyclic subset 
 $T_{1} \subseteq E$ that connects all vertices in $V$ and whose total length 
@@ -139,21 +146,21 @@ upper=TRUE, p=2))
 gr <- graph.adjacency(Wmat, weighted=TRUE, mode="undirected")
 mst <- minimum.spanning.tree(gr)
 @
+
 %--------------------------------------------------------------------------
 \subsection{MST2 for correlation networks}
 %--------------------------------------------------------------------------
 The second MST is defined as the MST of the reduced graph $G(V,E-T_{1})$. We 
 denote the union of the first and second MSTs by MST2. Each vertex in the MST2 
-has a minimum degree of $2$ if all the $p(p-1)/2$ edges between vertices 
-are considered. 
+has a minimum degree of $2$ if all the edges between vertices are considered. 
 
 The correlation (coexpression) network is defined as the edge-weighted graph 
 $G(V,E)$ where $V$ is the set of vertices in the graph with each vertex 
 corresponding to one feature (gene) in the gene set and $E$ is the set of edges 
-connecting pairs of vertices with weights estimated by the correlation 
-distances. The correlation distances are defined by $d_{ij}=1-|r_{ij}|$ where 
+connecting pairs of vertices with weights estimated by some correlation distance 
+measure. The correlation distance here is defined by $d_{ij}=1-|r_{ij}|$ where 
 $d_{ij}$ and $r_{ij}$ are respectively the correlation distance and correlation 
-parameter between genes $i$ and $j$ \cite{Rahmatallah2014}. The MST2 of the 
+coefficient between genes $i$ and $j$ \cite{Rahmatallah2014}. The MST2 of the 
 correlation network gives the minimal set of essential links (interactions) 
 among genes, which we interpret as a network of functional interactions. A gene 
 that is highly correlated with most of the other genes in the gene set tends to 
@@ -161,7 +168,7 @@ occupy a central position and has a relatively high degree in the MST2 because
 the shortest paths connecting the vertices of the first and second MSTs tend to 
 pass through this gene. In contrast, a gene with low intergene correlations 
 most likely occupies a non-central position in the MST2 and has a degree of 2. 
-This property of the MST2 makes it a valueable graphical visualization tool to 
+This property of the MST2 makes it a valuable graphical visualization tool to 
 examine the full correlation network by highlighting the most highly correlated 
 genes. As an example, the MST2 of the dataset generated in the previous example 
 can be found as follows
@@ -268,9 +275,9 @@ multivariate differential coexpression test that accounts for the correlation
 structure between features (genes). The test assigns weight factors $w$s to 
 genes under one condition and adjust these weights simultaneously such that 
 equality is achieved between each genes's weight and the sum of its weighted 
-correlations with other genes $r_{ij}$ in a gene set of $p$ genes
+absolute correlations ($r_{ij}$) with other genes in a gene set of $p$ genes
 
-$$w_{i} = \sum_{j \neq i} w_{i} r_{ij} \quad \quad 1 \leq i \leq p$$
+$$w_{i} = \sum_{j \neq i} w_{i} \left| r_{ij} \right| \quad \quad 1 \leq i \leq p$$
 
 \noindent The problem is solved as an eigenvector problem with a unique 
 solution which is the eigenvector corresponding to the largest eigenvalue 
@@ -285,61 +292,64 @@ $$w_{GSNCA} = \sum_{i=1}^{p} \left| w_{i}^{(1)} - w_{i}^{(2)} \right|$$
 This test statistic tests the null hypothesis $H_{0}: w_{GSNCA}=0$ against 
 the alternative $H_{1}: w_{GSNCA} \neq 0$. The performance of this test was 
 thoroughly examind in \cite{Rahmatallah2014}. $P$-value is calculated in 
-exactly the same way as before for the WW test.
+exactly the same way as before for the WW and KS tests. The values in the 
+scaled weight vectors $w^{(1)}$ and $w^{(2)}$ roughly fall in the range 
+$[0.5,1.5]$, with high values indicating genes that are highly correlated 
+with other genes in the same gene set.
 
 %--------------------------------------------------------------------------
 \subsection{The problem of zero standard deviation}
 %--------------------------------------------------------------------------
-In rare cases some features in a set may have constant or nearly constant 
-levels across the samples in one or both conditions. Such situation may arise 
-for RNA-Seq counts when some genes with many zero counts are allowed. 
+In special cases some features in a set may have constant or nearly constant 
+levels across the samples in one or both conditions. Such situation almost 
+never encountered in microarray data, but may arises for RNA-seq count data 
+where a genes may have zero counts under many samples if the gene is not 
+expressed. 
 This results in a zero or a tiny standard deviation. Such case produces an 
 error in command \Rfunction{cor} used to compute the correlations between 
 features. To avoid this situation, standard deviations are checked in advance 
 (default behaviour) and if any is found below a specified minimum limit 
 (default is \Robject{1e-3}), the execution stops and an error message is 
 returned indicating the the number of feature causing the problem (if only one 
-the index of that feature is given too). To perform the GSNCA for such set, 
+the index of that feature is given too). To perform the GSNCA for count data, 
 the features causing the problem must be excluded from the set.
 
-If a feature has nearly a constant level for some samples under both 
-conditions, permuting sample labels may group such samples under one condition 
-by chance and hence produce a standard deviation smaller than the minimum 
-limit. To allow the test to skip such permutations without causing excessive 
-delay, an upper limit for the number of allowed skips can be set (default 
-is $10$). If the upper limit is exceeded, an error message is returned.
+If a feature has nearly a constant level for some (but not all) samples under 
+both conditions, permuting sample labels may group such samples under one 
+condition by chance and hence produce a standard deviation smaller than the 
+minimum limit. To allow the test to skip such permutations without causing 
+excessive delay, an upper limit for the number of allowed skips can be set 
+(default is $10$). If the upper limit is exceeded, an error message is 
+returned.
 
 If the user is certain that the tested feature sets contain no feature with 
-nearly equal levels over many samples (such as the case with filtered 
-microarray data), the checking for tiny standard deviations can be skipped 
+nearly zero standard deviation (such as the case with filtered microarray 
+data), the checking step for tiny standard deviations can be skipped 
 in order to reduce the execution time.
 
 %--------------------------------------------------------------------------
-\section{Application to RNA-Seq counts}
+\section{Application to RNA-seq counts}
 %--------------------------------------------------------------------------
-RNA-Seq data consists of integer counts usually represented by the discrete 
+RNA-seq data consists of integer counts usually represented by the discrete 
 Poisson or negative Binomial distributions. Therefore, tests designed for 
 microarray data (which follows the continuous normal distribution) can not 
-be applied directly to RNA-Seq data. The nonparametric tests presented in 
+be applied directly to RNA-seq data. The nonparametric tests presented in 
 package \Rpackage{GSAR} need no prior distributional assumptions and can be 
-applied to RNA-Seq counts given that proper normalization is used. The 
+applied to RNA-seq counts given that proper normalization is used. The 
 normalization should accounts for the between-samples differences (library 
 size or sequencing depth) and within-sample differences (mainly gene length). 
-The \emph{reads per kilobase per million} (RPKM) is such example. However, 
-due to some limitations, two points must be declared:
+The \emph{reads per kilobase per million} (RPKM) is such normalization. 
+However, due to some limitations, two points must be declared:
 \begin{itemize}
   \item The variance of both the Poisson and negative Bionomial distributions, 
 used to model count data, is a function of their mean. Therefore, using the 
 radial KS test (\Rfunction{RKStest}) to detect pathways with differential 
-variance for RNA-Seq counts is not possible.
-  \item RNA-Seq datasets often have many zero counts, therefore, the problem 
+variance for RNA-seq counts is not possible.
+  \item RNA-seq datasets often have many zero counts, therefore, the problem 
 of genes having zero standard deviations in a pathway is frequent and prevent 
 calculating the correlation coefficients necessary to perform the GSNCA. 
 One possible solution is to discard any genes that may have zero or tiny 
-standard deviation and apply GSNCA to the remaining genes in the pathway. 
-Since count data demonstrate much higher differences between genes than 
-microarrays, Spearman's correlation coefficient is preferred 
-(set \Robject{cor.method} to \Robject{"spearman"}).
+standard deviation and apply GSNCA to the remaining genes in the pathway.
 \end{itemize}
 
 %--------------------------------------------------------------------------
@@ -347,7 +357,7 @@ microarrays, Spearman's correlation coefficient is preferred
 %--------------------------------------------------------------------------
 This Section illustrates the typical procedure for applying the methods 
 available in package \Rpackage{GSAR} to perform GSA. Two microarray and 
-one RNA-Seq datasets are used.
+one RNA-seq datasets are used.
 %--------------------------------------------------------------------------
 \subsection{The p53 dataset}
 %--------------------------------------------------------------------------
@@ -381,7 +391,7 @@ p53 dataset was used in the analysis presented in \cite{Rahmatallah2014}.\\
 %--------------------------------------------------------------------------
 \subsubsection{GSA}
 %--------------------------------------------------------------------------
-GSA are performed on selected C2 curated gene sets (pathways) of the 
+GSA is performed on selected C2 curated gene sets (pathways) of the 
 \emph{molecular signatures database} (MSigDB) $3.0$ \cite{Liberzon2011}. 
 This list of gene sets is available in package \Biocexptpkg{GSVAdata}. We start 
 by loading the required data
@@ -398,8 +408,10 @@ The genes in the \Robject{c2BroadSets} object have entrez identifiers.
 Package \Biocannopkg{org.Hs.eg.db} is used to convert the entrez identifiers to 
 gene symbol identifiers. Genes without unique mapping to gene symbol 
 identifiers or that do not exist in the p53 dataset are discarded from the C2 
-pathways. Finally, we keep only pathways with $10 \leq p \leq 500$ where $p$ 
-is the number of genes remaining in the pathways after filtering steps.
+pathways. This insures proper indexing of genes in the dataset by the gene 
+names in each C2 pathway. Finally, we keep only pathways with 
+$10 \leq p \leq 500$ where $p$ is the number of genes remaining in the 
+pathways after filtering steps.
 
 <<eval=TRUE>>=
 library(org.Hs.eg.db)
@@ -429,6 +441,7 @@ for (k in seq(1, len, by=1)) {
     remained[k] <- sum((genes.symbol[C2[[k]]] %in% p53genes) & 
     (C2[[k]] %in% genes.entrez))
                              }
+## discard C2 pathways which have less than 10 or more than 500 genes
 C2 <- C2[(remained>=10)&&(remained<=500)]
 pathway.names <- names(C2)
 c2.pathways <- list()
@@ -443,7 +456,8 @@ path.index <- which(names(c2.pathways) == "LU_TUMOR_VASCULATURE_UP")
 \noindent \Robject{c2.pathways} is now a list with each entry being a named 
 list of the genes (gene symbol identifiers) forming one C2 pathway. To 
 demonstrate the use of different tests, we consider the interesting C2 pathway 
-LU TUMOR VASCULATURE UP used in \cite{Rahmatallah2014} to demonstrate the GSNCA. 
+LU TUMOR VASCULATURE UP used in \cite{Rahmatallah2014} to demonstrate the 
+GSNCA. 
 
 <<>>=
 target.pathway <- p53DataSet[c2.pathways[["LU_TUMOR_VASCULATURE_UP"]],]
@@ -566,7 +580,52 @@ ALLdataset <- exprs(filtset2)
 Lets examine the C2 pathway KEGG CHRONIC MYELOID LEUKEMIA, knowm to be 
 specifically associated with the BCR/ABL mutation. This pathway has many 
 BCR/ABL-related genes and hence expected to show difference between NEG 
-and MUT conditions.
+and MUT conditions. To ensure proper indexing, the lists of genes in C2 
+pathways should consists only of genes available in the filtered ALL 
+dataset. Therefore, the same steps taken to filter the C2 pathways with 
+the p53 dataset are repeated for the ALL dataset.
+
+<<>>=
+C2 <- as.list(geneIds(c2BroadSets))
+len <- length(C2)
+genes.entrez <- unique(unlist(C2))
+genes.symbol <- array("",c(length(genes.entrez),1))
+x <- org.Hs.egSYMBOL
+mapped_genes <- mappedkeys(x)
+xx <- as.list(x[mapped_genes])
+for (ind in 1:length(genes.entrez)){
+    if (length(xx[[genes.entrez[ind]]])!=0)
+        genes.symbol[ind] <- xx[[genes.entrez[ind]]]
+                                   }
+## discard genes with no mapping to gene symbol identifiers
+genes.no.mapping <- which(genes.symbol == "")
+if(length(genes.no.mapping) > 0){
+    genes.entrez <- genes.entrez[-genes.no.mapping]
+    genes.symbol <- genes.symbol[-genes.no.mapping]
+                                }
+names(genes.symbol) <- genes.entrez
+## discard genes in C2 pathways which do not exist in ALL dataset
+ALLgenes <- rownames(ALLdataset)
+remained <- array(0,c(1,len))
+for (k in seq(1, len, by=1)) {
+    remained[k] <- sum((genes.symbol[C2[[k]]] %in% ALLgenes) & 
+    (C2[[k]] %in% genes.entrez))
+                             }
+## discard C2 pathways which have less than 10 or more than 500 genes
+C2 <- C2[(remained>=10)&&(remained<=500)]
+pathway.names <- names(C2)
+c2.pathways <- list()
+for (k in seq(1, length(C2), by=1)) {
+    selected.genes <- which(ALLgenes %in% genes.symbol[C2[[k]]])
+    c2.pathways[[length(c2.pathways)+1]] <- ALLgenes[selected.genes]
+                                    }
+names(c2.pathways) <- pathway.names
+path.index <- which(names(c2.pathways) == "KEGG_CHRONIC_MYELOID_LEUKEMIA")
+@
+
+\noindent \Robject{c2.pathways} is now a list with each entry being a named 
+list of the genes (gene symbol identifiers) forming one C2 pathway. Only 
+genes available in the filtered ALL dataset are included in the pathways.
 
 <<>>=
 KCMLpathway <- ALLdataset[c2.pathways[["KEGG_CHRONIC_MYELOID_LEUKEMIA"]],]
@@ -581,7 +640,7 @@ RKSresult$p.value
 GSNCAresult$p.value
 @
 
-\noindent At a significance level $0.05$, $p$-values show statistical evidences 
+\noindent At a significance level $0.05$, $P$-values show statistical evidence 
 that the pathway is differentially coexpressed and has different distributions 
 between BCR/ABL and NEG conditions. The MST2s of the correlation network for 
 BCR/ABL and NEG groups are shown in Figure \ref{fig:KCMLplot}, generated by 
@@ -627,7 +686,7 @@ the male-specific region of chromosome Y, and therefore are over-expressed
 in males (\Robject{msYgenes}). 
 The second is a set of genes, that are escaping X-chromosome inactivation, and 
 therefore are overexpressed in females (\Robject{XiEgenes}). These two sets 
-are useful in serving as true positives when GSA are conducted between males 
+are useful in serving as true positives when GSA is conducted between males 
 and females to detect gene sets that are differentially expressed.  
 
 <<>>=
@@ -659,7 +718,13 @@ length(Xigenes)
 %--------------------------------------------------------------------------
 Any transcript without entrez identifier or gene length information is 
 discarded. To consider only expressed genes in the analysis, genes with an 
-average \emph{count per million} (cpm) less than $0.1$ are discarded.\\
+average \emph{count per million} (cpm) less than $0.1$ are discarded. 
+The gene length information is used to perform the RPKM normalization. 
+Finally, the RPKM-normalized expression is transformed to the logarithm 
+scale. RPKM as well as a few other normalizations were used with the 
+Pickrell datasets in \cite{Rahmatallah2014bmc} to perform GSA and the 
+study found no significant differences between different normalizations 
+for the same test statistic.\\
 
 <<>>=
 library(edgeR)
@@ -740,20 +805,22 @@ nrow(XYpathway)
 nrow(Xipathway)
 @
 
-\noindent Note that two genes (\Robject{ENSG00000183878} and 
+\noindent Notice that two genes (\Robject{ENSG00000183878} and 
 \Robject{ENSG00000198692}) in \Robject{XYpathway} had zero standard deviations 
 for female samples and were filtered out from \Robject{XYpathway}. These two 
 genes are Y-liked genes and expected to have many zero counts for female 
 samples. Although this filtering step increases the chances of success in 
 performing GSNCA, the existence of many zero counts dispersed over many 
-samples for one or more genes many still cause a problem when a sample 
-permutation groups many zero counts under one condition. The parameter 
-\Robject{max.skip} in function \Rfunction{GSNCAtest} allows some tolerance by 
-assigning the maximum number of skipped permutations allowed to avoid the few 
-ones causing the problem. This solution may work or fail depending on the 
-proportion of zero counts in the data. For example, assigning 
-\Robject{max.skip} to $100$ or more solved the problem for 
-\Robject{XYpathway}, but it did not for \Robject{Xipathway}.
+samples for one or more genes may still cause a problem when the sample 
+permutation process groups many zero counts under one condition. The 
+parameter \Robject{max.skip} in function \Rfunction{GSNCAtest} allows some 
+tolerance by assigning the maximum number of skipped permutations allowed 
+to avoid the few ones causing the problem. This solution may work or fail 
+depending on the proportion of zero counts in the data. For example, 
+assigning \Robject{max.skip} to $100$ or more solved the problem for 
+\Robject{XYpathway}, but it did not for \Robject{Xipathway}. We advise to 
+perform gene filtering based on zero counts prior to trying the GSNCA 
+for count data.
 
 %--------------------------------------------------------------------------
 \section{Session info}
