@@ -2,13 +2,16 @@
 \title{GSAR News}
 \encoding{UTF-8}
 
-\section{Version 1.2.1}{\itemize{
+\section{Version 1.2.2}{\itemize{
 
 \item
 Bug fix in function HDP.ranking to accomodate the changes in package igraph (version 1.0.1).
 
 \item
 Additional steps added to the code of the second case study in the vignette to filter C2 gene sets properly.
+
+\item
+Minor changes in the vignette.
 }}
 
 \section{Version 1.0.0}{\itemize{
