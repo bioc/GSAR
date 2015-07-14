@@ -6,18 +6,18 @@
 
 \item
 New argument return.weights added to function plotMST2.pathway. If return.weights=TRUE, the weight vectors found by GSNCA for the genes under two classes are returned as a 2-column matrix.
-
-\item
-A few changes in the notations and the codes of the case studies used in the vignette.
 }}
 
-\section{Version 1.2.1}{\itemize{
+\section{Version 1.2.2}{\itemize{
 
 \item
 Bug fix in function HDP.ranking to accomodate the changes in package igraph (version 1.0.1).
 
 \item
-Additional steps added to the code of the second case study to filter C2 gene sets properly.
+Additional steps added to the code of the second case study in the vignette to filter C2 gene sets properly.
+
+\item
+Minor changes in the vignette.
 }}
 
 \section{Version 1.0.0}{\itemize{

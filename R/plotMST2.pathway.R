@@ -68,7 +68,6 @@ plotMST2.pathway <-
     major2.val <- max(p2)
     major1.ind <- which.max(p1)
     major2.ind <- which.max(p2)
-#    names(p1) <- names(p2) <- gnames
     MST2.group1 <- findMST2(object[,c(1:nv1)], cor.method, min.sd, TRUE)
     MST2.group2 <- findMST2(object[,c((nv1+1):nv)], cor.method, min.sd, TRUE)
     V(MST2.group1)$color <- V(MST2.group2)$color <- "red4"
@@ -92,7 +91,7 @@ plotMST2.pathway <-
     title(paste("Group 1\n", "Hub Gene (group 1):   ", gnames[major1.ind], 
         "\n", "Weight Factor:   ", floor(1000*major1.val)/1000, "\n", 
             "Hub Gene (group 2):   ",gnames[major2.ind],"\n",
-                "Weight Factor:   ",floor(1000*p1[gnames[major2.ind]])/1000, 
+                "Weight Factor:   ",floor(1000*p1[gnames[major2.ind],])/1000, 
                     "\n","\n","\n","\n","\n", "MST2 for group 1", sep=""))
 
     par(xpd=NA)
@@ -108,7 +107,7 @@ plotMST2.pathway <-
     title(paste("Group 2\n", "Hub Gene (group 2):   ", gnames[major2.ind], 
         "\n", "Weight Factor:   ", floor(1000*major2.val)/1000, "\n", 
             "Hub Gene (group 1):   ", gnames[major1.ind],"\n",
-                "Weight Factor:   ", floor(1000*p2[gnames[major1.ind]])/1000, 
+                "Weight Factor:   ", floor(1000*p2[gnames[major1.ind],])/1000, 
                     "\n","\n","\n","\n","\n", "MST2 for group 2", sep=""))
 
     if(!(is.null(name))) 
