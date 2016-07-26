@@ -1,11 +1,19 @@
 export(
+      AggrFtest,
       HDP.ranking,
+      radial.ranking,
       WWtest,
       KStest,
+      MDtest,
       RKStest,
+      RMDtest,
       GSNCAtest,
       findMST2,
-      plotMST2.pathway
+      findMST2.PPI,
+      plotMST2.pathway,
+      TestGeneSets
       )
 
 import(igraph)
+importFrom("stats", "cor", "dist", "sd", "var.test", "p.adjust")
+importFrom("graphics", "legend", "mtext", "par", "plot", "title")

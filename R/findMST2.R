@@ -1,6 +1,6 @@
 findMST2 <- 
     function(object, cor.method="pearson", min.sd=1e-3, 
-        return.MST2only=FALSE)
+        return.MST2only=TRUE)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features and 
@@ -26,15 +26,15 @@ findMST2 <-
             deviation smaller than ", min.sd, sep=""))
 
     distmat <- 1 - abs(cor(objt, method=cor.method))
-    gr <- graph.adjacency(distmat, weighted=TRUE, mode="undirected")
-    first.mst <- minimum.spanning.tree(gr)
-    mst1.matrix <- get.adjacency(first.mst, attr="weight", sparse=FALSE)
+    gr <- graph_from_adjacency_matrix(distmat, weighted=TRUE, mode="undirected")
+    first.mst <- mst(gr)
+    mst1.matrix <- as_adjacency_matrix(first.mst, attr="weight", sparse=FALSE)
     distmat2 <- distmat - mst1.matrix
-    gr2 <- graph.adjacency(distmat2, weighted=TRUE, mode="undirected")
-    second.mst <- minimum.spanning.tree(gr2)
-    mst2.matrix <- get.adjacency(second.mst, attr="weight", sparse=FALSE)
+    gr2 <- graph_from_adjacency_matrix(distmat2, weighted=TRUE, mode="undirected")
+    second.mst <- mst(gr2)
+    mst2.matrix <- as_adjacency_matrix(second.mst, attr="weight", sparse=FALSE)
     MST2.matrix <- mst1.matrix + mst2.matrix
-    MST2 <- graph.adjacency(MST2.matrix, weighted=TRUE, mode="undirected")
+    MST2 <- graph_from_adjacency_matrix(MST2.matrix, weighted=TRUE, mode="undirected")
     if(return.MST2only) MST2 else 
         list("MST2"=MST2, "first.mst"=first.mst, "second.mst"=second.mst)
 }

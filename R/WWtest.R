@@ -1,5 +1,5 @@
 WWtest <- 
-    function(object, group, nperm=1000)
+    function(object, group, nperm=1000, pvalue.only=TRUE)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features and 
@@ -10,6 +10,9 @@ WWtest <-
             Possible values are 1 and 2")
 
     nv <- ncol(object)
+
+    if(!is.logical(pvalue.only)) 
+        stop("'pvalue.only' must be logical")
 
     if(length(group) != nv) 
         stop("length of 'group' must equal the number of columns in 'object'")
@@ -25,19 +28,19 @@ WWtest <-
     objt <- aperm(object, c(2,1))
     Wmat <- as.matrix(dist(objt, method="euclidean", diag=TRUE, 
         upper=TRUE, p=2))
-    gr <- graph.adjacency(Wmat, weighted=TRUE, mode="undirected")
+    gr <- graph_from_adjacency_matrix(Wmat, weighted=TRUE, mode="undirected")
     V(gr)[c(1:nv1)]$color <- "green"
     V(gr)[c((nv1+1):nv)]$color <- "red"
-    mst <- minimum.spanning.tree(gr)
-    domain <- V(mst)$color
+    MST <- mst(gr)
+    domain <- V(MST)$color
     runs <- array(0,c(1,nperm))
 
     for(itr in 1:nperm) 
     { 
         randperm <- sample(domain, replace = FALSE)
-        mst2 <- mst
+        mst2 <- MST
         V(mst2)$color <- randperm
-        mstWM <- get.adjacency(mst, type="lower", attr="weight", sparse=FALSE)
+        mstWM <- as_adjacency_matrix(MST, type="lower", attr="weight", sparse=FALSE)
         edgeind <- which(mstWM != 0, arr.ind = TRUE, useNames = FALSE) 
         runs[itr] <- 1 + 
             sum(V(mst2)[edgeind[,1]]$color != V(mst2)[edgeind[,2]]$color)
@@ -45,10 +48,11 @@ WWtest <-
 
     sd_runs <- apply(runs, 1, sd)
     W_perm <- (runs - mean(runs)) / sd_runs
-    mstWM <- get.adjacency(mst, type = "lower", attr="weight", sparse=FALSE)
+    mstWM <- as_adjacency_matrix(MST, type = "lower", attr="weight", sparse=FALSE)
     edgeind <- which(mstWM != 0, arr.ind=TRUE, useNames=FALSE) 
-    runs_obs <- 1 + sum(V(mst)[edgeind[,1]]$color != V(mst)[edgeind[,2]]$color)
+    runs_obs <- 1 + sum(V(MST)[edgeind[,1]]$color != V(MST)[edgeind[,2]]$color)
     W_obs <- (runs_obs - mean(runs)) / sd_runs 
-    pvalue <- (sum(W_perm < W_obs) + 1) / (length(W_perm) + 1)
-    list("statistic"=W_obs,"perm.stat"=W_perm,"p.value"=pvalue)
+    pvalue <- (sum(W_perm <= W_obs) + 1) / (length(W_perm) + 1)
+    if(pvalue.only) return(pvalue)
+    if(!pvalue.only) return(list("statistic"=W_obs,"perm.stat"=W_perm,"p.value"=pvalue))
 }

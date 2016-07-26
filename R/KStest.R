@@ -1,5 +1,5 @@
 KStest <- 
-    function(object, group, nperm=1000)
+    function(object, group, nperm=1000, pvalue.only=TRUE)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features 
@@ -10,6 +10,9 @@ KStest <-
             Possible values are 1 and 2")
 
     nv <- ncol(object)
+
+    if(!is.logical(pvalue.only)) 
+        stop("'pvalue.only' must be logical")
 
     if(length(group) != nv) 
         stop("length of 'group' must equal the number of columns in 'object'")
@@ -25,12 +28,12 @@ KStest <-
     objt <- aperm(object, c(2,1))
     Wmat <- as.matrix(dist(objt, method="euclidean", diag=TRUE, 
         upper=TRUE, p=2))
-    gr <- graph.adjacency(Wmat, weighted=TRUE, mode="undirected")
+    gr <- graph_from_adjacency_matrix(Wmat, weighted=TRUE, mode="undirected")
     V(gr)[c(1:nv1)]$color <- "green"
     V(gr)[c((nv1+1):nv)]$color <- "red"
-    mst <- minimum.spanning.tree(gr)
-    KSranking <- HDP.ranking(mst)
-    domain <- V(mst)$color
+    MST <- mst(gr)
+    KSranking <- HDP.ranking(MST)
+    domain <- V(MST)$color
     D_perm <- array(0,c(1,nperm))
 
     for(itr in 1:nperm) 
@@ -56,5 +59,6 @@ KStest <-
     }
     D_obs <- sqrt((nv1 * (nv-nv1)) / (nv1 + (nv-nv1))) * max(abs(di))
     pvalue <- (sum(D_perm > D_obs) + 1) / (length(D_perm) + 1)
-    list("statistic"=D_obs,"perm.stat"=D_perm,"p.value"=pvalue)
+    if(pvalue.only) return(pvalue)
+    if(!pvalue.only) return(list("statistic"=D_obs,"perm.stat"=D_perm,"p.value"=pvalue))
 }

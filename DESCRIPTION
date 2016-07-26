@@ -1,11 +1,12 @@
 Package: GSAR
 Type: Package
 Title: Gene Set Analysis in R
-Version: 1.7.0
-Date: 2015-07-14
+Version: 1.7.1
+Date: 2016-07-25
 Author: Yasir Rahmatallah <yrahmatallah@uams.edu>, Galina Glazko <gvglazko@uams.edu>
 Maintainer: Yasir Rahmatallah <yrahmatallah@uams.edu>, Galina Glazko <gvglazko@uams.edu>
-Depends: R (>= 3.0.1), igraph (>= 0.7.0)
+Depends: R (>= 3.0.1), igraph (>= 0.7.1)
+Imports: stats, graphics
 Suggests: MASS, GSVAdata, ALL, tweeDEseqCountData, GSEABase, annotate, org.Hs.eg.db, Biobase, genefilter, hgu95av2.db, edgeR, BiocStyle
 LazyData: yes
 biocViews: Software, StatisticalMethod, DifferentialExpression

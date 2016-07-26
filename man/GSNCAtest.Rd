@@ -8,7 +8,7 @@
 detect differentially coexpressed gene sets.}
 
 \usage{GSNCAtest(object, group, nperm=1000, cor.method="pearson", check.sd=TRUE, 
-min.sd=1e-3, max.skip=10)}
+min.sd=1e-3, max.skip=10, pvalue.only=TRUE)}
 
 \arguments{
   \item{object}{a numeric matrix with columns and rows respectively 
@@ -29,6 +29,9 @@ any feature has a standard deviation smaller than \code{min.sd} the execution
 stops and an error message is returned.}
   \item{max.skip}{maximum number of skipped random permutations which yield 
 any feature with a standard deviation less than \code{min.sd}.}
+  \item{pvalue.only}{logical. If \code{TRUE} (default), the p-value is 
+returned. If \code{FALSE} a list of length three containing the observed 
+statistic, the vector of permuted statistics, and the p-value is returned.}
 }
 
 \details{This function performs the Gene Sets Net Correlations Analysis 
@@ -43,17 +46,19 @@ statistic \eqn{w_{GSNCA}} is given by the first norm between the scaled
 weight vectors \eqn{w^{(1)}} and \eqn{w^{(2)}} (each vector is multiplied 
 by its norm) between two conditions
 
-\deqn{w_{GSNCA} = \sum_{i=1}^{p} | w_{i}^{(1)} - w_{i}^{(2)} |}
+\deqn{w = \sum_{i=1}^{p} | w_{i}^{(1)} - w_{i}^{(2)} |}
 
-This test statistic tests the null hypothesis that \eqn{w_{GSNCA}=0} against 
-the alternative that \eqn{w_{GSNCA}} does not equal to zero. 
+This test statistic tests the null hypothesis that \eqn{w=0} against 
+the alternative that \eqn{w} does not equal to zero. 
 The performance of this test was thoroughly examind in 
 Rahmatallah et. al. (2014). The null distribution of the test statistic is 
 estimated by permuting sample labels \code{nperm} times and calculating the 
 test statistic for each. P-value is calculated as 
-\code{p.value}=(\code{b} + 1)/(\code{nperm} + 1) where \code{b} is the number 
-of permutations giving a more extreme statistic than the observed test 
-statistic.
+
+\deqn{p.value = \frac{\sum_{k=1}^{nperm} I \left[ W_{k} \geq W_{obs} \right] + 1}{nperm+1}}
+
+where \eqn{W_{k}} is the test statistic for permutation \code{k}, \eqn{W_{obs}} is the 
+observed test statistic, and \code{I} is the indicator function.
 
 In the case of RNA-seq count data, some non-expressed genes may have zero 
 counts across the samples under one or two conditions. Such situation 
@@ -80,7 +85,10 @@ the checking stage for tiny standard deviations can be skipped by setting
 \code{check.sd} to \code{FALSE} in order to reduce the execution time.}
 
 \value{
-GSNCAtest produces a list with the following components:
+When \code{pvalue.only=TRUE} (default), function \code{GSNCAtest} returns 
+the p-value indicating the attained significance level. When 
+\code{pvalue.only=FALSE}, function \code{GSNCAtest} produces a list of 
+length 3 with the following components:
 \item{statistic}{the value of the observed test statistic.}
 \item{perm.stat}{numeric vector of the resulting test statistic for 
 \code{nperm} random permutations of sample labels.}
@@ -121,8 +129,7 @@ gp <- rbind(gp1,gp2)
 dataset <- aperm(gp, c(2,1))
 ## first 20 samples belong to group 1
 ## second 20 samples belong to group 2
-result <- GSNCAtest(object=dataset, group=c(rep(1,20),rep(2,20))) 
-pvalue <- result$p.value
+pvalue <- GSNCAtest(object=dataset, group=c(rep(1,20),rep(2,20))) 
 }
 
 \keyword{multivariate}

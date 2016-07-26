@@ -16,6 +16,7 @@ Little Rock, AR 72205.\\
 \SweaveOpts{echo=TRUE}
 \usepackage{graphicx}
 \usepackage{Bioconductor}
+\usepackage[utf8]{inputenc}
 
 \begin{document}
 
@@ -27,49 +28,79 @@ Little Rock, AR 72205.\\
 %--------------------------------------------------------------------------
 \section{Introduction}
 %--------------------------------------------------------------------------
-This vignette gives an overview of the \R{} package \Rpackage{GSAR} 
+This vignette provides an overview of the \R{} package \Rpackage{GSAR} 
 which provides a set of multivariate statistical tests for self-contained 
 gene set analysis (GSA). \Rpackage{GSAR} consists of two-sample multivariate 
 nonparametric statistical methods testing a null hypothesis against specific 
-alternative hypotheses, such as differences in shift, scale or correlation 
-structure. It also offers a graphical visualization tool for correlation 
-networks to examine the change in the net correlation structure of a gene set 
-between two conditions based on the minimum spanning trees. The package 
-implements the methods proposed in 
+alternative hypotheses, such as differences in mean (shift), variance (scale) 
+or correlation structure. It also offers a graphical visualization tool for 
+the correlation networks obtained from expression data to examine the change 
+in the net correlation structure of a gene set between two conditions based 
+on the minimum spanning trees. The same tool also works for protein-protein 
+Interaction (PPI) networks to highlight the most influential proteins. 
+The package implements the methods proposed in 
 \cite{Rahmatallah2014, Rahmatallah2012, Friedman1979} which were thoroughly 
 tested using simulated and microarray datasets in \cite{Rahmatallah2014} and 
-\cite{Rahmatallah2012}. These methods (except \Rfunction{RKStest}) can also be 
-applied to RNA-seq count data given that proper normalization which accounts 
-for both the within-sample differences (gene lengths) and between-samples 
-differences (library sizes) is used. This vignette begins with a brief overview 
-of the theoretical concepts behind the methods, and then gives a number of 
+\cite{Rahmatallah2012}. Figure \ref{fig:outline} shows the outline of the 
+package. While the test functions in the package analyze one gene set 
+at a time, the wrapper function \Rfunction{TestGeneSets} receives a list 
+of gene sets and invokes a specific test function for all the gene sets 
+in a sequential manner.
+
+The methods in the package can also be applied to RNA-seq count 
+data given that proper normalization which accounts for both the within-sample 
+differences (gene lengths) and between-samples differences (library sizes) is 
+used. However, for RNA-seq data the variance is a function of mean expression 
+and applying the variance tests (\Rfunction{RKStest}, \Rfunction{RMDtest}, 
+\Rfunction{AggrFtest}) to RNA-seq data highly depends on the normalization 
+method. This specific topic is not well-studied and characterized yet. 
+This vignette begins with a brief overview of the theoretical concepts 
+behind the statistical methods, and then provides a number of 
 fully worked case studies, from microarrays to RNA-seq count data.
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=\textwidth]{outline.pdf}}
+  \caption{GSAR package outline. The inputs for the statistical tests can be (1) 
+the matrix of gene expression for a single gene set in the form of normalized 
+microarray or RNA-seq data and a vector of labels indicating to which condition 
+each sample belongs; or (2) the matrix of gene expression for all genes, a 
+vector of labels indicating to which condition each sample belongs, and a list 
+of gene sets. Each test returns P-value and, optionally, the test statistic of 
+observed data, test statistic for all permutations, and other optional outputs. 
+Some functions produce graph plots.}
+  \label{fig:outline}
+\end{figure}
 
 Many methodologies for testing the differential expression of gene sets have 
 been suggested and are collectively named gene set analysis (GSA). GSA can be 
 either \emph{competitive} or \emph{self-contained}. Competitive approaches 
 compare a gene set against its complement which contains all genes excluding 
 the genes in the set, and self-contained approaches compare whether a gene set 
-is differentially expressed (DE) between two phenotypes. Competitive GSA 
-approaches are influenced by the genomic coverage and the filtering of the data 
-and can increase their power by the addition of unrelated data and even noise 
-\cite{Tripathi2013}. Due to these problems, package \Rpackage{GSAR} focuses on 
-self-contained methods only. The possibility to formulate different 
+is differentially expressed (DE) between two phenotypes (condition). Some 
+competitive approaches are influenced by the genomic coverage and the filtering 
+of the data and can increase their power by the addition of unrelated data and 
+even noise \cite{Tripathi2013} while others can be influenced by the proportion 
+of up-regulated and down-regulated genes in a gene set between two conditions 
+\cite{Rahmatallah2016BIB}. Due to these problems, package \Rpackage{GSAR} 
+focuses on self-contained methods only. The possibility to formulate different 
 statistical hypotheses by using different test statistics with self-contained 
 approaches enables the formulation and exploration of different biological 
 hypotheses \cite{Rahmatallah2012}. For GSA, testing hypotheses other than the 
 equality of the mean expression vectors remains underexplored. Package 
 \Rpackage{GSAR} provides a set of methods to test a null hypothesis against 
-specific alternatives, such as differential shift or mean 
-(function \Rfunction{KStest}), scale or variance (function \Rfunction{RKStest}) 
-or correlation structure (function \Rfunction{GSNCAtest}). 
+specific alternatives, such as differential distribution 
+(function \Rfunction{WWtest}), shift or mean (functions \Rfunction{KStest} 
+and \Rfunction{MDtest}), scale or variance (functions \Rfunction{RKStest}, 
+\Rfunction{RMDtest}, and \Rfunction{AggrFtest}) or net correlation structure 
+(function \Rfunction{GSNCAtest}). 
 
-Most of the tests available in package \Rpackage{GSAR} (all except 
-\Rfunction{GSNCAtest}) are network or graph-based. \Rpackage{GSAR} handles 
-graphs using the \Rclass{igraph} class from package \CRANpkg{igraph} 
-\cite{Csardi2006}. \Rpackage{GSAR} also invokes some functions from package 
-\Rpackage{igraph} in its methods implementation and uses the plot method for 
-class \CRANpkg{igraph} for visualizing the generated graphs.
+Most of the statistical methods available in package \Rpackage{GSAR} (all 
+except \Rfunction{GSNCAtest} and \Rfunction{AggrFtest}) are network or 
+graph-based. \Rpackage{GSAR} handles graphs using the rich functionality of 
+the \Rclass{igraph} class from package \CRANpkg{igraph} \cite{Csardi2006}. 
+\Rpackage{GSAR} invokes some functions from package \Rpackage{igraph} in its 
+methods implementation and uses the plot method for class \CRANpkg{igraph} 
+for visualizing the generated graphs.
 
 Data packages \Biocexptpkg{ALL}, \Biocexptpkg{GSVAdata} and 
 \Biocexptpkg{tweeDEseqCountData} which contain datasets are necessary for 
@@ -121,8 +152,9 @@ to the positions of their corresponding vertices in the MST. The purpose of
 this ranking is to obtain the strong relationship between observations 
 differences in ranks and their distances in $R^{p}$. The ranking algorithm can 
 be designed specifically to confine a particular alternative hypothesis more 
-detection power \cite{Rahmatallah2012}. Three tests in package \Rpackage{GSAR} 
-are based on MST: \Rfunction{WWtest}, \Rfunction{KStest} and \Rfunction{RKStest}. 
+detection power \cite{Rahmatallah2012}. Five tests in package \Rpackage{GSAR} 
+are based on MST: \Rfunction{WWtest}, \Rfunction{KStest}, \Rfunction{MDtest}, 
+\Rfunction{RKStest}, and \Rfunction{RMDtest}. 
 
 The following example generates a feature set of $20$ features and $40$ 
 observations using the random multivariate normal data generator from package 
@@ -137,22 +169,23 @@ options(width=80, digits=3)
 library(MASS)
 set.seed(123)
 nf <- 20
-nobs <- 40
+nobs <- 60
 zero_vector <- array(0,c(1,nf))
 cov_mtrx <- diag(nf)
 dataset <- mvrnorm(nobs, zero_vector, cov_mtrx)
 Wmat <- as.matrix(dist(dataset, method="euclidean", diag=TRUE, 
 upper=TRUE, p=2))
-gr <- graph.adjacency(Wmat, weighted=TRUE, mode="undirected")
-mst <- minimum.spanning.tree(gr)
+gr <- graph_from_adjacency_matrix(Wmat, weighted=TRUE, mode="undirected")
+MST <- mst(gr)
 @
 
 %--------------------------------------------------------------------------
-\subsection{MST2 for correlation networks}
+\subsection{MST2 for correlation and PPI networks}
 %--------------------------------------------------------------------------
 The second MST is defined as the MST of the reduced graph $G(V,E-T_{1})$. We 
 denote the union of the first and second MSTs by MST2. Each vertex in the MST2 
-has a minimum degree of $2$ if all the edges between vertices are considered. 
+has a minimum degree of $2$ if all the edges between vertices are considered 
+(full network). 
 
 The correlation (coexpression) network is defined as the edge-weighted graph 
 $G(V,E)$ where $V$ is the set of vertices in the graph with each vertex 
@@ -169,19 +202,38 @@ the shortest paths connecting the vertices of the first and second MSTs tend to
 pass through this gene. In contrast, a gene with low intergene correlations 
 most likely occupies a non-central position in the MST2 and has a degree of 2. 
 This property of the MST2 makes it a valuable graphical visualization tool to 
-examine the full correlation network by highlighting the most highly correlated 
-genes. As an example, the MST2 of the dataset generated in the previous example 
-can be found as follows
+examine the full correlation network obtained from gene expression data by 
+highlighting the most influential genes. As an example, the MST2 of the 
+dataset generated in the previous example can be found as follows
 
 <<>>=
 ## The input of findMST2 must be a matrix with rows and columns 
-## respectively correspond to genes and columns.
+## respectively corresponding to genes and columns.
 ## Therefore, dataset must be transposed first.
 dataset <- aperm(dataset, c(2,1))
 MST2 <- findMST2(dataset)
 @
+
+The protein-protein Interaction (PPI) network is defined as the binary graph
+$G(V,E)$ where $V$ is the set of vertices in the graph with each vertex 
+corresponding to one protein and $E$ is the set of edges connecting pairs 
+of vertices where $e_{ij}=1$ if interaction exists between proteins $i$ and 
+$j$ and $e_{ij}=0$ otherwise. The MST2 of the PPI network gives the minimal 
+set of essential interactions among proteins. It was shown in 
+\cite{Zybailov2016methods} that function \Rfunction{plotMST2.PPI} reveals 
+fine network structure with highly connected proteins occupying central 
+positions in clusters.
+
 %--------------------------------------------------------------------------
-\section{Multivriate generalizations using MST}
+\section{Statistical methods}
+%--------------------------------------------------------------------------
+Package \Rpackage{GSAR} provides seven statistical methods that test five 
+specific alternative hypotheses against the null (see Figure \ref{fig:outline}), 
+two functions to find the MST2 of correlation and PPI networks, one wrapper 
+function to plot the MST2 of correlation networks obtained from gene expression 
+data under two conditions, and one wrapper function to facilitate performing a 
+specific statistical method for a list of gene sets.
+
 %--------------------------------------------------------------------------
 \subsection{Wald-Wolfowitz test}
 %--------------------------------------------------------------------------
@@ -189,7 +241,7 @@ The Wald-Wolfowitz (WW) tests the null hypothesis $H_{0}: F_{x}=F_{y}$ against
 the alternative $H_{1}: F_{x} \neq F_{y}$. When $p=1$, the univariate WW test 
 begins by sorting the observations from two phenotypes in ascending order and 
 labeling each observation by its phenotype. Then, the number of \emph{runs} 
-($R$) is calculated where $R$ is a consecative sequence of identical labels. 
+($R$) is calculated where $R$ is a consecutive sequence of identical labels. 
 The test statistic is a function of the number of runs and is asymptotically 
 normally distributed.
 
@@ -203,17 +255,18 @@ statistic is the standardized number of subtrees
 $$W = \frac{R-E[R]}{\sqrt{var[R]}}$$
 
 \noindent The null distribution of $W$ is obtained by permuting the 
-observation labels for a large number of times and calculating $W$ for each 
-time and was found to be asymptotically normal. $P$-value is calculated as 
+observation labels for a large number of times ($nperm$) and calculating 
+$W$ for each time. The null distribution is asymptotically normal. $P$-value 
+is calculated as 
 
-$$P-value = \frac{b + 1}{nperm + 1}$$ 
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ W_{k} \leq W_{obs} \right] + 1}{nperm + 1}$$
 
-\noindent where $b$ is the number of permutations giving a more extreme 
-statistic $W$ than the observed test statistic and $nperm$ is the total 
-number of permutations. Function \Rfunction{WWtest} performs this test.
+\noindent where $W_{k}$ is the test statistic for permutation $k$, $W_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function. Function 
+\Rfunction{WWtest} performs this test.
 
 %--------------------------------------------------------------------------
-\subsection{Kolmogorov-Smirnov test}
+\subsection{Kolmogorov-Smirnov tests}
 %--------------------------------------------------------------------------
 When $p=1$, the univariate Kolmogorov-Smirnov (KS) test begins by sorting 
 the observations from two phenotypes in ascending order. Then observations 
@@ -223,38 +276,53 @@ $$d_{i} = \frac{r_{i}}{n_{1}} - \frac{s_{i}}{n_{2}}$$
 
 \noindent is calculated where $r_{i}$ ($s_{i}$) is the number of 
 observations in $X$ ($Y$) ranked lower than $i$, $1 \leq i \leq N$. 
-The test statistic is the maximal absolute difference $D = max|d_{i}|$. 
+The test statistic is the maximal absolute difference between the 
+Cumulative Distribution Functions (CDFs) of the ranks of samples 
+from X and Y, $D = \sqrt{\frac{n_{1}n_{2}}{n_{1}+n_{2}}} max|d_{i}|$. 
 The null distribution of $D$ is obtained by permuting the observation labels 
-for a large number of times and calculating $D$ for each time. 
-$P$-value is calculated in exactly the same way as before for the WW test.
+for a large number of times ($nperm$) and calculating $D$ for each time. 
+The KS statistic asymptotically follows the Smirnov distribution and 
+tests a one-sided hypothesis. $P$-value is calculated as
+
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ D_{k} \geq D_{obs} \right] + 1}{nperm + 1}$$
+
+\noindent where $D_{k}$ is the test statistic for permutation $k$, $D_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function.
 
 The ranking scheme can be designed to confine a specific alternative 
 hypothesis more power. Two possibilities are available: First, if the null 
-hypothesis $H_{0}: \bar{X} = \bar{Y}$ is tested against the alternative 
-$H_{1}: \bar{X} \neq \bar{Y}$, the MST is rooted at a node with the largest 
+hypothesis $H_{0}: \bar{\mu_X} = \bar{\mu_Y}$ is tested against the alternative 
+$H_{1}: \bar{\mu_X} \neq \bar{\mu_Y}$, the MST is rooted at a node with the largest 
 geodesic distance and the rest of the nodes are ranked according to the 
-\emph{high directed preorder} (HDP) traversal of the tree \cite{Friedman1979}. 
-Function \Rfunction{KStest} performs this test. 
-Second, if the null hypothesis $H_{0}: var(X) = var(Y)$ is tested against 
-the alternative hypothesis $H_{1}: var(X) \neq var(Y)$, the MST is rooted at 
-the node of smallest geodesic distance (centroid) and nodes with largest 
-depths from the root are assigned higher ranks. Hence, ranks are increasing 
-\emph{radially} from the root of the MST. Function \Rfunction{RKStest} performs 
-this test.
+\emph{high directed preorder} (HDP) traversal of the tree 
+\cite{Friedman1979}, which can be found using function \Rfunction{HDP.ranking}. 
+Function \Rfunction{KStest} performs this specific test. 
+Second, if the null hypothesis $H_{0}: \bar{\sigma_X} = \bar{\sigma_Y}$ is 
+tested against the alternative hypothesis $H_{1}: \bar{\sigma_X} \neq 
+\bar{\sigma_Y}$, the MST is rooted at the node of smallest geodesic distance 
+(centroid) and nodes with largest depths from the root are assigned higher ranks. 
+Hence, ranks are increasing \emph{radially} from the root of the MST. The radial 
+ranking of vertices in a tree can be found using function \Rfunction{radial.ranking}. 
+Function \Rfunction{RKStest} performs this specific test.
 
 The MST found in the previous example is shown in Figure \ref{fig:mst} were 
-vertices from group 1 are in green and vertices from group 2 are in yellow. 
-Ranking vertices in the graph according to the HDP traversal of the MST 
-can be done using function \Rfunction{HDP.ranking}
+vertices from group 1 are in green color and vertices from group 2 are in 
+yellow color. Ranking vertices in the graph according to the HDP and 
+radial traversal of the MST can be done respectively using functions 
+\Rfunction{HDP.ranking} and \Rfunction{radial.ranking}
 
 <<>>=
-HDP.ranking(mst)
+HDP.ranking(MST)
+@
+
+<<>>=
+radial.ranking(MST)
 @
 
 <<mst, fig=TRUE, include=FALSE, echo=FALSE, results=verbatim, height=5, width=5>>=
-V(mst)$color <- c(rep("green",20), rep("yellow",20))
+V(MST)$color <- c(rep("green",20), rep("yellow",20))
 par(mfrow=c(1,1), mar=c(1,1,1,1), oma=c(1,1,1,1))
-plot(mst, vertex.label.cex=1, vertex.size=16)
+plot(MST, vertex.label.cex=0.8, vertex.size=9)
 @
 
 \begin{figure}[h]
@@ -266,13 +334,65 @@ plot(mst, vertex.label.cex=1, vertex.size=16)
 \end{figure}
 
 %--------------------------------------------------------------------------
-\section{Gene sets net correlations analysis}
+\subsection{Mean deviation tests}
 %--------------------------------------------------------------------------
-\subsection{Method}
+The mean deviation (MD) statistic calculates the average deviation between 
+the Cumulative Distribution Functions (CDFs) of the ranks of samples from 
+X and Y. The MD statistic for a gene set of size $p$ is defined as
+
+$$D = \sum_{i=1}^{p} \left[ P(X,i) - P(Y,i) \right]$$
+
+\noindent where
+
+$$P(X,i) = \frac{\sum_{j \in X, j \leq i} r_{j}^{\alpha}}{\sum_{j \in X} r_{j}^{\alpha}}$$
+
+\noindent and
+
+$$P(Y,i) = \sum_{j \in Y, j \leq i} \frac{1}{n_{2}}$$
+
+\noindent $r_{j}$ is the rank of sample $j$ in the MST and the exponent 
+$\alpha$ is set to $0.25$ to give the ranks a modest weight. The null 
+distribution of $D$ is obtained by permuting sample labels for a large 
+number of times ($nperm$) and calculating $D$ for each time. The MD 
+statistic has asymptotically a normal distribution and tests a two-sided 
+hypothesis. $P$-value is calculated as
+ 
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ |D_{k}| \geq |D_{obs}| \right] + 1}{nperm + 1}$$
+
+\noindent where $D_{k}$ is the test statistic for permutation $k$, $D_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function. Similar to KS statistic, 
+combining this statistic with appropriate ranking schemes, allows the test 
+of specific alternative hypotheses, namely diffferential mean (mean deviation 
+test function \Rfunction{MDtest}) and differential variance (radial mean 
+deviation function \Rfunction{RMDtest}).
+
+%--------------------------------------------------------------------------
+\subsection{Aggregated F-test}
+%--------------------------------------------------------------------------
+The univariate F-test is used to detect differential variance in individual 
+genes forming a gene set of size $p$, and the individual P-values, 
+$p_{i}, 1 \leq i \leq p$, are then aggregated using Fisher probability 
+combining method to obtain a score statistic ($T$) for the gene set
+
+$$T = -2 \sum_{i=1}^{p} \log_{e} (p_{i})$$
+
+\noindent Significance is estimated by permuting sample labels and calculating 
+$T$ for a large number of times ($nperm$). P-value is calculated as 
+
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ T_{k} \geq T_{obs} \right] + 1}{nperm + 1}$$
+
+\noindent where $T_{k}$ is the test statistic for permutation $k$, $T_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function.
+
+%--------------------------------------------------------------------------
+\subsection{Gene sets net correlations analysis}
+%--------------------------------------------------------------------------
+\subsubsection{Method}
 %--------------------------------------------------------------------------
 Gene sets net correlations analysis (GSNCA) is a two-sample nonparametric 
 multivariate differential coexpression test that accounts for the correlation 
-structure between features (genes). The test assigns weight factors $w$s to 
+structure between features (genes). For a gene set of size $p$, the test 
+assigns weight factors $w_{i}, 1 \leq i \leq p,$ to 
 genes under one condition and adjust these weights simultaneously such that 
 equality is achieved between each genes's weight and the sum of its weighted 
 absolute correlations ($r_{ij}$) with other genes in a gene set of $p$ genes
@@ -298,12 +418,12 @@ $[0.5,1.5]$, with high values indicating genes that are highly correlated
 with other genes in the same gene set.
 
 %--------------------------------------------------------------------------
-\subsection{The problem of zero standard deviation}
+\subsubsection{The problem of zero standard deviation}
 %--------------------------------------------------------------------------
 In special cases some features in a set may have constant or nearly constant 
 levels across the samples in one or both conditions. Such situation almost 
 never encountered in microarray data, but may arises for RNA-seq count data 
-where a genes may have zero counts under many samples if the gene is not 
+where a gene may have zero counts under many samples if the gene is not 
 expressed. 
 This results in a zero or a tiny standard deviation. Such case produces an 
 error in command \Rfunction{cor} used to compute the correlations between 
@@ -315,8 +435,8 @@ the index of that feature is given too). To perform the GSNCA for count data,
 the features causing the problem must be excluded from the set.
 
 If a feature has nearly a constant level for some (but not all) samples under 
-both conditions, permuting sample labels may group such samples under one 
-condition by chance and hence produce a standard deviation smaller than the 
+both conditions, permuting sample labels may group together such samples under 
+one condition by chance and hence produce a standard deviation smaller than the 
 minimum limit. To allow the test to skip such permutations without causing 
 excessive delay, an upper limit for the number of allowed skips can be set 
 (default is $10$). If the upper limit is exceeded, an error message is 
@@ -328,10 +448,10 @@ data), the checking step for tiny standard deviations can be skipped
 in order to reduce the execution time.
 
 %--------------------------------------------------------------------------
-\section{Application to RNA-seq counts}
+\section{Notes on handling RNA-seq count data}
 %--------------------------------------------------------------------------
 RNA-seq data consists of integer counts usually represented by the discrete 
-Poisson or negative Binomial distributions. Therefore, tests designed for 
+Poisson or Negative Binomial distributions. Therefore, tests designed for 
 microarray data (which follows the continuous normal distribution) can not 
 be applied directly to RNA-seq data. The nonparametric tests presented in 
 package \Rpackage{GSAR} need no prior distributional assumptions and can be 
@@ -339,17 +459,20 @@ applied to RNA-seq counts given that proper normalization is used. The
 normalization should accounts for the between-samples differences (library 
 size or sequencing depth) and within-sample differences (mainly gene length). 
 The \emph{reads per kilobase per million} (RPKM) is such normalization. 
-However, due to some limitations, two points must be declared:
+However, due to the lack of thorough performance studies, two points 
+must be declared:
 \begin{itemize}
   \item The variance of both the Poisson and negative Bionomial distributions, 
-used to model count data, is a function of their mean. Therefore, using the 
-radial KS test (\Rfunction{RKStest}) to detect pathways with differential 
-variance for RNA-seq counts is not possible.
+used to model RNA-seq count data is a function of their mean. Therefore, 
+applying the variance tests to RNA-seq data highly depends on the 
+normalization method. This specific topic is not well-studied and 
+characterized yet.
   \item RNA-seq datasets often have many zero counts, therefore, the problem 
-of genes having zero standard deviations in a pathway is frequent and prevent 
-calculating the correlation coefficients necessary to perform the GSNCA. 
-One possible solution is to discard any genes that may have zero or tiny 
-standard deviation and apply GSNCA to the remaining genes in the pathway.
+of having at least one gene with zero standard deviations in a gene set is 
+frequent and prevent calculating the correlation coefficients necessary to 
+perform the GSNCA. One possible solution is to discard any genes that may 
+have zero or tiny standard deviation and apply GSNCA to the remaining genes 
+in the gene set.
 \end{itemize}
 
 %--------------------------------------------------------------------------
@@ -455,21 +578,27 @@ path.index <- which(names(c2.pathways) == "LU_TUMOR_VASCULATURE_UP")
 
 \noindent \Robject{c2.pathways} is now a list with each entry being a named 
 list of the genes (gene symbol identifiers) forming one C2 pathway. To 
-demonstrate the use of different tests, we consider the interesting C2 pathway 
-LU TUMOR VASCULATURE UP used in \cite{Rahmatallah2014} to demonstrate the 
+demonstrate the use of different tests, we consider the C2 pathway 
+LU TUMOR VASCULATURE UP used in \cite{Rahmatallah2014} to illustrate 
 GSNCA. 
 
 <<>>=
 target.pathway <- p53DataSet[c2.pathways[["LU_TUMOR_VASCULATURE_UP"]],]
 group.label <- c(rep(1,17), rep(2,33))
-WWresult <- WWtest(target.pathway, group.label)
-KSresult <- KStest(target.pathway, group.label)
-RKSresult <- RKStest(target.pathway, group.label)
-GSNCAresult <- GSNCAtest(target.pathway, group.label)
-WWresult$p.value
-KSresult$p.value
-RKSresult$p.value
-GSNCAresult$p.value
+WW_pvalue <- WWtest(target.pathway, group.label)
+KS_pvalue <- KStest(target.pathway, group.label)
+MD_pvalue <- MDtest(target.pathway, group.label)
+RKS_pvalue <- RKStest(target.pathway, group.label)
+RMD_pvalue <- RMDtest(target.pathway, group.label)
+F_pvalue <- AggrFtest(target.pathway, group.label)
+GSNCA_pvalue <- GSNCAtest(target.pathway, group.label)
+WW_pvalue
+KS_pvalue
+MD_pvalue
+RKS_pvalue
+RMD_pvalue
+F_pvalue
+GSNCA_pvalue
 @
 
 \noindent The questions addressed by these tests were the identification of 
@@ -481,9 +610,10 @@ are shown in Figure \ref{fig:mst2plot}, generated by function
 \Rfunction{plotMST2.pathway}
 
 <<mst2plot, fig=TRUE, include=FALSE, echo=TRUE, results=verbatim, height=7, width=7>>=
-plotMST2.pathway(p53DataSet[c2.pathways[[path.index]],],
+plotMST2.pathway(object=p53DataSet[c2.pathways[[path.index]],],
 group=c(rep(1,17), rep(2,33)), name="LU_TUMOR_VASCULATURE_UP", 
-legend.size=0.9, label.size=1.2, cor.method="pearson")
+legend.size=1.2, leg.x=-1.2, leg.y=2, 
+label.size=1, label.dist=0.8, cor.method="pearson")
 @
 
 \begin{figure}[!h]
@@ -508,9 +638,17 @@ binding site and its expression is highly correlated with p53 dosage
 \cite{Yoon2002}. Therefore, both hub genes provide adequate information about 
 the underlying biological processes.
 
-If testing all the gene sets in the \Robject{c2.pathways} list is desired, a 
-loop can be constructed to extract one pathway at a time and perform the 
-desired tests similar to what has been shown above.
+If testing multiple or all the gene sets in the \Robject{c2.pathways} list is 
+desired, the wrapper function \Rfunction{TestGeneSets} can be used. For 
+example, the following code tests the first $3$ gene sets in list 
+\Robject{c2.pathways}, that have a minimum of $10$ and a maximum of $100$ 
+genes, using the GSNCA method
+
+<<>>=
+results <- TestGeneSets(object=p53DataSet, group=group.label, 
+geneSets=c2.pathways[1:3], min.size=10, max.size=100, test="GSNCAtest")
+results
+@
 
 %--------------------------------------------------------------------------
 \subsection{The ALL dataset}
@@ -529,12 +667,12 @@ the ALL dataset with samples normalized using the
 %--------------------------------------------------------------------------
 \subsubsection{Filtering and normalization}
 %--------------------------------------------------------------------------
-Affymetrix probe identifiers were mapped to unique gene symbol identifiers. 
-Probes without mapping to entrez and gene symbol identifiers were discarded. 
-Probes with duplicate intensities were assessed and the probe with the largest 
+Affymetrix probe identifiers without mapping to entrez and gene symbol 
+identifiers were discarded. Affymetrix probe identifiers were mapped to 
+unique gene symbol identifiers and intensities of probes mapping to the 
+same gene symbol identifier were assessed and the probe with the largest 
 absolute value of t-statistic between normal (NEG) and mutation (MUT) 
-conditions was selected as the gene match. Finally, genes were assigned gene 
-symbol identifiers.\\
+conditions was selected as the gene match.\\
 
 <<>>=
 library(Biobase)
@@ -630,25 +768,32 @@ genes available in the filtered ALL dataset are included in the pathways.
 <<>>=
 KCMLpathway <- ALLdataset[c2.pathways[["KEGG_CHRONIC_MYELOID_LEUKEMIA"]],]
 group.label <- c(rep(1,37), rep(2,42))
-WWresult <- WWtest(KCMLpathway, group.label)
-KSresult <- KStest(KCMLpathway, group.label)
-RKSresult <- RKStest(KCMLpathway, group.label)
-GSNCAresult <- GSNCAtest(KCMLpathway, group.label)
-WWresult$p.value
-KSresult$p.value
-RKSresult$p.value
-GSNCAresult$p.value
+WW_pvalue <- WWtest(KCMLpathway, group.label)
+KS_pvalue <- KStest(KCMLpathway, group.label)
+MD_pvalue <- MDtest(KCMLpathway, group.label)
+RKS_pvalue <- RKStest(KCMLpathway, group.label)
+RMD_pvalue <- RMDtest(KCMLpathway, group.label)
+F_pvalue <- AggrFtest(KCMLpathway, group.label)
+GSNCA_pvalue <- GSNCAtest(KCMLpathway, group.label)
+WW_pvalue
+KS_pvalue
+MD_pvalue
+RKS_pvalue
+RMD_pvalue
+F_pvalue
+GSNCA_pvalue
 @
 
 \noindent At a significance level $0.05$, $P$-values show statistical evidence 
-that the pathway is differentially coexpressed and has different distributions 
+that the pathway is differentially coexpressed and has different distribution 
 between BCR/ABL and NEG conditions. The MST2s of the correlation network for 
 BCR/ABL and NEG groups are shown in Figure \ref{fig:KCMLplot}, generated by 
 function \Rfunction{plotMST2.pathway}
 
 <<KCMLplot, fig=TRUE, include=FALSE, echo=TRUE, results=verbatim, height=8, width=8>>=
-plotMST2.pathway(KCMLpathway, group.label, name="KEGG_CHRONIC_MYELOID_LEUKEMIA", 
-legend.size=0.9, label.size=1, cor.method="pearson")
+plotMST2.pathway(object=KCMLpathway, group=group.label, 
+name="KEGG_CHRONIC_MYELOID_LEUKEMIA", legend.size=1.2, leg.x=-1, 
+leg.y=2, label.size=0.8, cor.method="pearson")
 @
 
 \begin{figure}[!h]
@@ -766,20 +911,20 @@ differentially expressed with high significance
 <<>>=
 XYpathway <- rpkm.set[XYgenes,]
 group.label.pickrell <- (gender == "male") + 1
-WWresult <- WWtest(XYpathway, group.label.pickrell)
-KSresult <- KStest(XYpathway, group.label.pickrell)
-WWresult$p.value
-KSresult$p.value
+WW_pvalue <- WWtest(XYpathway, group.label.pickrell)
+KS_pvalue <- KStest(XYpathway, group.label.pickrell)
+WW_pvalue
+KS_pvalue
 @
 
 \noindent while gene set \Robject{Xigenes} showed no such evidence as expected
 
 <<>>=
 Xipathway <- rpkm.set[Xigenes,]
-WWresult <- WWtest(Xipathway, group.label.pickrell)
-KSresult <- KStest(Xipathway, group.label.pickrell)
-WWresult$p.value
-KSresult$p.value
+WW_pvalue <- WWtest(Xipathway, group.label.pickrell)
+KS_pvalue <- KStest(Xipathway, group.label.pickrell)
+WW_pvalue
+KS_pvalue
 @
 
 \noindent To apply the GSNCA, genes with tiny standard deviations must be 

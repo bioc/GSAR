@@ -1,18 +1,21 @@
 HDP.ranking <- 
-    function(mst)
+    function(object)
 {
-    rr <- farthest.nodes(mst, directed=FALSE, unconnected=TRUE)
+    if(!is_igraph(object)) 
+        stop("'object' must be of class igraph. See package igraph for details")
+
+    rr <- farthest.nodes(object, directed=FALSE, unconnected=TRUE)
     if(is.list(rr)) root <- floor(as.numeric(rr$vertices[1]))
     if(is.numeric(rr)) root <- floor(rr[1])
-    terminal_nodes <- which(igraph::degree(mst) == 1)
+    terminal_nodes <- which(igraph::degree(object) == 1)
     ltn <- length(terminal_nodes) - 1
     tn <- terminal_nodes
     tn <- tn[tn != root]
     if(is.list(rr)) 
-    sp <- all_shortest_paths(mst, from=root, to=tn, mode="all")$res
+    sp <- all_shortest_paths(object, from=root, to=tn, mode="all")$res
     if(is.numeric(rr))
-    sp <- get.shortest.paths(mst, from=root, to=tn, mode="all")$vpath
-    path_len <- shortest.paths(mst)
+    sp <- get.shortest.paths(object, from=root, to=tn, mode="all")$vpath
+    path_len <- shortest.paths(object)
     break_ties <- path_len[root, tn] / max(path_len)
     depth <- array(0, c(1,ltn))
     KSranks <- root

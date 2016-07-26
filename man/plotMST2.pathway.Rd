@@ -11,8 +11,11 @@ under two conditions. It plots the MST2 of the correlation network of the
 feature set under both conditions side-by-side and highlights hub nodes to 
 facilitate a visual comparison.}
 
-\usage{plotMST2.pathway(object, group, name=NULL, legend.size=1, label.size=1, 
-cor.method="pearson", min.sd=1e-3, return.weights=FALSE)}
+\usage{plotMST2.pathway(object, group, name=NULL, cor.method="pearson", 
+min.sd=1e-3, legend.size=1, leg.x=-0.8, leg.y=1.5, return.weights=FALSE, 
+group1.name="Group 1", group2.name="Group 2", label.size=1, 
+label.color="black", label.dist=0.5, vertex.size=8, vertex.label.font=1, 
+edge.width=1)}
 
 \arguments{
   \item{object}{a numeric matrix with columns and rows respectively 
@@ -21,17 +24,21 @@ function as the rownames of this matrix.}
   \item{group}{a numeric vector indicating group associations for samples. 
 Possible values are 1 and 2.}
   \item{name}{an optional character string giving the name of the feature set 
-(pathway). If given, the name will be displayed at the top of the plot.}
-  \item{legend.size}{an optional numeric value controlling the relative font 
-size of the legend to the default font size. Default is 1.}
-  \item{label.size}{an optional numeric value controlling the relative font 
-size of vertex labels to the default font size. Default is 1.}
+(gene set). If given, the name will be displayed at the top of the plot.}
   \item{cor.method}{a character string indicating which correlation 
 coefficient is to be computed. Possible values are \dQuote{\code{pearson}} 
-(default), \dQuote{\code{spearman}} and \dQuote{\code{kendall}}.}
-  \item{min.sd}{the minimum allowed standard deviation for any feature. If 
-any feature has a standard deviation smaller than \code{min.sd} the execution 
-stops and an error message is returned.}
+(default), \dQuote{\code{spearman}} and \dQuote{\code{kendall}}. Default 
+value is \dQuote{\code{pearson}}.}
+  \item{min.sd}{a numeric value indicating the minimum allowed standard 
+deviation for any feature. If any feature has a standard deviation 
+smaller than \code{min.sd} then the execution stops and an error message 
+is returned. Default value is 1e-3.}
+  \item{legend.size}{an optional numeric value controlling the relative font 
+size of the legend to the default font size. Default is 1.}
+  \item{leg.x}{a numeric value indicating the amount of horizontal 
+shift of the legend box to allow better positioning in the plot.}
+  \item{leg.y}{a numeric value indicating the amount of vertical 
+shift of the legend box to allow better positioning in the plot.}
   \item{return.weights}{logical. Default value is FALSE. If the weight 
 factors aasigned to the genes by the GSNCA method are desired, setting 
 this parameter to TRUE returns the weight factors in a matrix with 2 columns 
@@ -40,6 +47,24 @@ in the gene set. If the \code{rownames} of \code{object} are provided, then
 they will be used as \code{rownames} for the returned matrix. If the 
 \code{rownames} of \code{object} are abscent, node labels will be set to 
 \code{as.character(c(1:nrow(object)))}.}
+  \item{group1.name}{an optional character string to be presented as the 
+given name for class 1 in the plot. Default value is \dQuote{\code{Group 1}}}
+  \item{group2.name}{an optional character string to be presented as the 
+given name for class 2 in the plot. Default value is \dQuote{\code{Group 2}}}
+  \item{label.size}{a numeric value passed to argument vertex.label.cex in 
+command plot.igraph to specify the vertex label size. Default value is 1.}
+  \item{label.color}{a character string specifying the color of vertex 
+labels. Default value is \dQuote{\code{black}}.}
+  \item{label.dist}{a numeric value passed to argument vertex.label.dist in 
+command plot.igraph to specify the distance between vertex labels and the 
+centers of vertices. Default value is 0.5.}
+  \item{vertex.size}{a numeric value passed to argument vertex.size in 
+command plot.igraph to specify the vertex size. Default value is 8.}
+  \item{vertex.label.font}{a numeric value passed to argument 
+vertex.label.font in command plot.igraph to specify the used font type. 
+Default value is 1.}
+  \item{edge.width}{a numeric value passed to argument edge.width in 
+command plot.igraph to specify the edge width in the plot.}
 }
 
 \details{This is a wrapper plotting function for the convenience of users. It 
@@ -130,4 +155,5 @@ plotMST2.pathway(object=dataset, group=c(rep(1,20),rep(2,20)),
 name="Example Pathway") 
 }
 
-\keyword{misc}
+\keyword{dplot}
+\keyword{graphs}

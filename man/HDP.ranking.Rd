@@ -9,10 +9,10 @@
 minimum spanning tree (MST) according to the High Directed Preorder traversal 
 of the tree.}
 
-\usage{HDP.ranking(mst)}
+\usage{HDP.ranking(object)}
 
 \arguments{
-  \item{mst}{object of class \code{igraph} containing the minimum 
+  \item{object}{object of class \code{igraph} that consists of a minimum 
 spanning tree.}
 }
 
@@ -40,7 +40,7 @@ Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 with more than 26 links. However, this situation is almost impossible for a 
 dataset composed of a few hundreds or less of samples.}
 
-\seealso{\code{\link{KStest}}.}
+\seealso{\code{\link{radial.ranking}}, \code{\link{KStest}}, \code{\link{MDtest}}.}
 
 \examples{
 ## generate random data using normal distribution
@@ -50,11 +50,10 @@ objt <- aperm(object, c(2,1))
 ## calculate the weight matrix
 Wmat <- as.matrix(dist(objt, method = "euclidean", diag = TRUE, upper = TRUE, p = 2))
 ## create a weighted undirectional graph from the weight matrix
-gr <- graph.adjacency(Wmat, weighted = TRUE, mode = "undirected")
+gr <- graph_from_adjacency_matrix(Wmat, weighted = TRUE, mode = "undirected")
 ## find the minimum spanning tree
-mst <- minimum.spanning.tree(gr)
-ranks <- HDP.ranking(mst)
-plot(mst)
+MST <- mst(gr)
+HDP.ranks <- HDP.ranking(MST)
 }
 
 \keyword{arith}

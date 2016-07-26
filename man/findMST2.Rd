@@ -6,7 +6,7 @@
 
 \description{Find the union of the first and second minimum spanning trees.}
 
-\usage{findMST2(object, cor.method="pearson", min.sd=1e-3, return.MST2only=FALSE)}
+\usage{findMST2(object, cor.method="pearson", min.sd=1e-3, return.MST2only=TRUE)}
 
 \arguments{
   \item{object}{a numeric matrix with columns and rows respectively 
@@ -18,11 +18,11 @@ and \dQuote{\code{kendall}}.}
   \item{min.sd}{the minimum allowed standard deviation for any feature. 
 If any feature has a standard deviation smaller than \code{min.sd} the 
 execution stops and an error message is returned.}
-  \item{return.MST2only}{logical. If \code{FALSE} (default) a list of length 
-three containing objects of class 
-\code{igraph} is returned. The first and second are the first and second MSTs 
-respectively. The third is the union of the first and second, MST2. If 
-\code{TRUE}, an object of class \code{igraph} containing the MST2 is returned.}
+  \item{return.MST2only}{logical. If \code{TRUE} (default), an object of 
+class \code{igraph} containing the MST2 is returned. If \code{FALSE}, a 
+list of length three containing objects of class \code{igraph} is returned. 
+The first and second objects are the first and second MSTs, respectively. 
+The third is the union of the first and second, MST2.}
 }
 
 \details{This function produces the union of the first and second minimum 
@@ -63,12 +63,12 @@ index of that feature is given too).
 }
 
 \value{
-If \code{return.MST2only} is \code{TRUE}, \code{findMST2} returns an object 
-of class \code{igraph} containing the MST2. If \code{return.MST2only} is 
-\code{FALSE} (default), \code{findMST2} returns a list with the following 
-components:
+When \code{return.MST2only=TRUE} (default), function \code{findMST2} returns 
+an object of class \code{igraph} representing the MST2. If 
+\code{return.MST2only=FALSE}, function \code{findMST2} returns a list of 
+length 3 with the following components:
 \item{MST2}{an object of class \code{igraph} containing the union of the 
-first MST and second MST.}
+first and second MSTs.}
 \item{first.mst}{an object of class \code{igraph} containing the first MST.}
 \item{second.mst}{an object of class \code{igraph} containing the second MST.}
 }
@@ -105,3 +105,4 @@ trees <- findMST2(dataset)
 }
 
 \keyword{dplot}
+\keyword{graphs}

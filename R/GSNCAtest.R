@@ -1,6 +1,6 @@
 GSNCAtest <- 
     function(object, group, nperm=1000, cor.method="pearson",
-        check.sd=TRUE, min.sd=1e-3, max.skip=10)
+        check.sd=TRUE, min.sd=1e-3, max.skip=10, pvalue.only=TRUE)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features 
@@ -11,6 +11,9 @@ GSNCAtest <-
             Possible values are 1 and 2")
 
     nv <- ncol(object)
+
+    if(!is.logical(pvalue.only)) 
+        stop("'pvalue.only' must be logical")
 
     if(length(group) != nv) 
         stop("length of 'group' must equal the number of columns in 'object'")
@@ -99,6 +102,7 @@ GSNCAtest <-
         p2 <- abs(e2$vectors[,1])
         D_perm[itr] <- sum(abs((p1*norm(matrix(p1))) - (p2*norm(matrix(p2)))))
     }
-    pvalue <- (sum(D_perm > D_obs) + 1) / (length(D_perm) + 1)
-    list("statistic"=D_obs,"perm.stat"=D_perm,"p.value"=pvalue)
+    pvalue <- (sum(D_perm >= D_obs) + 1) / (length(D_perm) + 1)
+    if(pvalue.only) return(pvalue)
+    if(!pvalue.only) return(list("statistic"=D_obs,"perm.stat"=D_perm,"p.value"=pvalue))
 }

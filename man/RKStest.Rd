@@ -9,15 +9,21 @@ based on the minimum spanning tree (MST) and Kolmogorov-Smirnov statistic.
 It tests the null hypothesis that a set of features has the
 same scale in two conditions versus different scales.}
 
-\usage{RKStest(object, group, nperm=1000)}
+\usage{RKStest(object, group, mst.order=1, nperm=1000, pvalue.only=TRUE)}
 
 \arguments{
   \item{object}{a numeric matrix with columns and rows respectively 
 corresponding to samples and features.}
   \item{group}{a numeric vector indicating group associations for samples. 
 Possible values are 1 and 2.}
+  \item{mst.order}{numeric value to indicate the consideration of the union 
+of the first \code{mst.order} MSTs. Default value is 1. Maximum allowed 
+value is 5.}
   \item{nperm}{number of permutations used to estimate the null distribution 
 of the test statistic. If not given, a default value 1000 is used.}
+  \item{pvalue.only}{logical. If \code{TRUE} (default), the p-value is 
+returned. If \code{FALSE} a list of length three containing the observed 
+statistic, the vector of permuted statistics, and the p-value is returned.}
 }
 
 \details{This function tests the null hypothesis that a set of features has the 
@@ -32,16 +38,22 @@ higher depths from the root are assigned higher ranks. The quantity
 is the number of nodes (samples) from condition 1(2) which ranked lower than 
 \eqn{i}, \eqn{1 \le i \le N} and \eqn{N} is the total number of samples. The 
 Kolmogorov-Smirnov statistic is given by the maximum absolute difference 
-\eqn{D = max|d_i|}. The performance of this test under different alternative 
-hypotheses was thoroughly examind in Rahmatallah et. al. (2012). The null 
-distribution of the test statistic is estimated by permuting sample labels 
-\code{nperm} times and calculating the test statistic for each. P-value is 
-calculated as \code{p.value}=(\code{b} + 1)/(\code{nperm} + 1) where 
-\code{b} is the number of permutations giving a more extreme statistic 
-than the observed test statistic.}
+\eqn{D = \sqrt{\frac{n_{1}n_{2}}{n_{1}+n_{2}}} max|d_i|}. The performance of 
+this test under different alternative hypotheses was thoroughly examind in 
+Rahmatallah et. al. (2012). The null distribution of the test statistic is 
+estimated by permuting sample labels \code{nperm} times and calculating the 
+test statistic for each. P-value is calculated as 
+
+\deqn{p.value = \frac{\sum_{k=1}^{nperm} I \left[ D_{k} \geq D_{obs} \right] + 1}{nperm + 1}}
+
+where \eqn{D_{k}} is the test statistic for permutation \code{k}, \eqn{D_{obs}} is the 
+observed test statistic, and \code{I} is the indicator function.}
 
 \value{
-RKStest produces a list with the following components:
+When \code{pvalue.only=TRUE} (default), function \code{RKStest} returns 
+the p-value indicating the attained significance level. When 
+\code{pvalue.only=FALSE}, function \code{RKStest} produces a list of 
+length 3 with the following components:
 \item{statistic}{the value of the observed test statistic.}
 \item{perm.stat}{numeric vector of the resulting test statistic for 
 \code{nperm} random permutations of sample labels.}
@@ -62,11 +74,12 @@ Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 The variance of both the Poisson and negative Bionomial distributions, used 
 to model count data, is a function of their mean. Therefore, using the radial 
 Kolmogorov-Smirnov test (\code{RKStest}) to detect pathways with differential 
-variance for RNA-Seq counts is not possible. RKS test still works well for 
-microarray data.
+variance for RNA-Seq counts is not recommended without proper data 
+normalization.
 }
 
-\seealso{\code{\link{KStest}}, \code{\link{WWtest}}.}
+\seealso{\code{\link{RMDtest}}, \code{\link{WWtest}}, \code{\link{MDtest}}, 
+\code{\link{KStest}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions
@@ -88,8 +101,7 @@ gp <- rbind(gp1,gp2)
 dataset <- aperm(gp, c(2,1))
 ## first 20 samples belong to group 1
 ## second 20 samples belong to group 2
-result <- RKStest(object=dataset, group=c(rep(1,20),rep(2,20))) 
-pvalue <- result$p.value
+pvalue <- RKStest(object=dataset, group=c(rep(1,20),rep(2,20)))
 }
 
 \keyword{multivariate}

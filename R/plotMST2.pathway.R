@@ -1,6 +1,9 @@
 plotMST2.pathway <- 
-    function(object, group, name=NULL, legend.size=1, 
-        label.size=1, cor.method="pearson", min.sd=1e-3, return.weights=FALSE)
+    function(object, group, name=NULL, cor.method="pearson", min.sd=1e-3,
+        legend.size=1, leg.x=-0.8, leg.y=1.5, return.weights=FALSE,
+            group1.name="Group 1", group2.name="Group 2", label.size=1,
+                label.color="black", label.dist=0.5, vertex.size=8,
+                    vertex.label.font=1, edge.width=1)
 {
     if(!(is.matrix(object))) 
         stop("'object' must be a matrix where rows are features 
@@ -25,6 +28,9 @@ plotMST2.pathway <-
         stop("'cor.method' must be a character string indicating which 
             correlation coefficient to be calculated. One of 'pearson' 
                 (default), 'spearman' or 'kendall'")
+
+    if(!is.logical(return.weights))
+        stop("'return.weights' must be a logical parameter")
 
     object <- object[,c(which(group == 1), which(group == 2))]
     nv1 <- sum(group == 1)
@@ -81,40 +87,45 @@ plotMST2.pathway <-
     V(MST2.group2)$color[p2 < 0.75] <- "gray"
     V(MST2.group1)$color[p1 < 0.5] <- "ghostwhite"
     V(MST2.group2)$color[p2 < 0.5] <- "ghostwhite"
-
+    V(MST2.group1)$label.color <- label.color
+    V(MST2.group2)$label.color <- label.color
     par(mfrow=c(1,2), mar=c(1,2,12,2), oma=c(1,1,4,1), cex=0.7)
 
-    plot(MST2.group1, vertex.label.font=1, vertex.label.cex=label.size, 
-        vertex.label=gnames, vertex.label.dist=1, vertex.size=8, 
-            layout=layout.fruchterman.reingold, edge.width=1)
+    plot(MST2.group1, vertex.label.font=vertex.label.font, vertex.label=gnames,
+        vertex.label.cex=label.size, vertex.label.dist=label.dist,
+            vertex.size=vertex.size, edge.width=edge.width,
+                layout=layout.fruchterman.reingold)
 
-    title(paste("Group 1\n", "Hub Gene (group 1):   ", gnames[major1.ind], 
-        "\n", "Weight Factor:   ", floor(1000*major1.val)/1000, "\n", 
-            "Hub Gene (group 2):   ",gnames[major2.ind],"\n",
-                "Weight Factor:   ",floor(1000*p1[gnames[major2.ind],])/1000, 
-                    "\n","\n","\n","\n","\n", "MST2 for group 1", sep=""))
+    title(paste(group1.name, "\n", "Hub Gene (", group1.name,"):   ", 
+        gnames[major1.ind], "\n", "Weight Factor:   ", 
+            floor(1000*major1.val)/1000, "\n", "Hub Gene (", group2.name,"):   ",
+                gnames[major2.ind],"\n", "Weight Factor:   ",
+                    floor(1000*p1[gnames[major2.ind],])/1000, 
+                        "\n","\n","\n","\n","\n", sep=""))
 
     par(xpd=NA)
 
-    legend(x=-0.8, y=1.5, cex=legend.size, legend=c("w>1.5", "1.25<w<1.5", 
+    legend(x=leg.x, y=leg.y, cex=legend.size, legend=c("w>1.5", "1.25<w<1.5", 
         "1<w<1.25", "0.75<w<1", "0.5<w<0.75", "w<0.5"), fill=c("red4", "red", 
             "orange", "yellow", "gray", "ghostwhite"), horiz=TRUE)
 
-    plot(MST2.group2, vertex.label.font=1, vertex.label.cex=label.size, 
-        vertex.label=gnames, vertex.label.dist=1, vertex.size=8, 
-            layout=layout.fruchterman.reingold, edge.width=1)
+    plot(MST2.group2, vertex.label.font=vertex.label.font, vertex.label=gnames,
+        vertex.label.cex=label.size, vertex.label.dist=label.dist,
+            vertex.size=vertex.size, edge.width=edge.width,
+                layout=layout.fruchterman.reingold)
 
-    title(paste("Group 2\n", "Hub Gene (group 2):   ", gnames[major2.ind], 
-        "\n", "Weight Factor:   ", floor(1000*major2.val)/1000, "\n", 
-            "Hub Gene (group 1):   ", gnames[major1.ind],"\n",
-                "Weight Factor:   ", floor(1000*p2[gnames[major1.ind],])/1000, 
-                    "\n","\n","\n","\n","\n", "MST2 for group 2", sep=""))
+    title(paste(group2.name, "\n", "Hub Gene (", group2.name,"):   ",
+        gnames[major2.ind], "\n", "Weight Factor:   ",
+            floor(1000*major2.val)/1000, "\n", "Hub Gene (", group1.name, "):   ",
+                gnames[major1.ind],"\n", "Weight Factor:   ", 
+                    floor(1000*p2[gnames[major1.ind],])/1000, 
+                        "\n","\n","\n","\n","\n", sep=""))
 
     if(!(is.null(name))) 
-        mtext(paste("Pathway: ", name, sep=""), cex=0.9, outer=TRUE, line=2)
+        mtext(paste("Pathway: ", name, sep=""), cex=legend.size, outer=TRUE, line=2)
 
     mtext(paste("There are ", length(gnames)," genes in this pathway", sep=""), 
-        cex=0.9, outer=TRUE, line=0)
+        cex=legend.size, outer=TRUE, line=0)
 
-if(return.weights==TRUE) return(cbind(p1,p2))
+    if(return.weights) return(cbind(p1,p2))
 }
