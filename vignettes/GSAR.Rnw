@@ -220,7 +220,7 @@ corresponding to one protein and $E$ is the set of edges connecting pairs
 of vertices where $e_{ij}=1$ if interaction exists between proteins $i$ and 
 $j$ and $e_{ij}=0$ otherwise. The MST2 of the PPI network gives the minimal 
 set of essential interactions among proteins. It was shown in 
-\cite{Zybailov2016methods} that function \Rfunction{plotMST2.PPI} reveals 
+\cite{Zybailov2016methods} that function \Rfunction{findMST2.PPI} reveals 
 fine network structure with highly connected proteins occupying central 
 positions in clusters.
 

@@ -61,7 +61,7 @@ Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 
 Zybailov B., Byrd A., Glazko G., Rahmatallah Y. and Raney K. (2016) 
 Protein-protein interaction analysis for functional characterization of 
-helicases. Methods, doi:10.1016/j.ymeth.2016.04.014.
+helicases. Methods, \bold{108}, 56--64.
 }
 
 \keyword{ package }
