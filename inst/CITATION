@@ -1,23 +1,12 @@
-citHeader("Please cite the first paper for the GSNCA and the second paper for WW, KS and RKS statistical tests implemented in package GSAR.")
+citHeader("Please cite different statistical methods as indicated in the vignette.")
 
 citEntry(
    entry="article",
-   title = "Gene sets net correlations analysis (GSNCA): a multivariate differential coexpression test for gene sets",
-   author = "Yasir Rahmatallah and Frank Emmert-Streib and Galina Glazko",
-   journal = "Bioinformatics",
-   volume = "30",
-   pages = "360-368",
-   year = "2014",
-   textVersion = "Rahmatallah Y and Emmert-Streib F and Glazko G (2014). Gene sets net correlations analysis (GSNCA): a multivariate differential coexpression test for gene sets. Bioinformatics 30, 360-368"
-)
-
-citEntry(
-   entry="article",
-   title = "Gene set analysis for self-contained tests: complex null and specific alternative hypotheses",
-   author = "Yasir Rahmatallah and Frank Emmert-Streib and Galina Glazko",
-   journal = "Bioinformatics",
-   volume = "28",
-   pages = "3073-3080",
-   year = "2012",
-	textVersion = "Rahmatallah Y and Emmert-Streib F and Glazko G (2012). Gene set analysis for self-contained tests: complex null and specific alternative hypotheses. Bioinformatics 28, 3073-3080"
+   title = "GSAR: Bioconductor package for gene set analysis in R",
+   author = "Yasir Rahmatallah and Boris Zybailov and Frank Emmert-Streib and Galina Glazko",
+   journal = "BMC Bioinformatics",
+   volume = "18",
+   pages = "61",
+   year = "2017",
+	textVersion = "Rahmatallah Y and Zybailov B and Emmert-Streib F and Glazko G (2017). GSAR: Bioconductor package for gene set analysis in R. BMC Bioinformatics 18, 61"
 )

@@ -30,22 +30,22 @@ Little Rock, AR 72205.\\
 %--------------------------------------------------------------------------
 This vignette provides an overview of the \R{} package \Rpackage{GSAR} 
 which provides a set of multivariate statistical tests for self-contained 
-gene set analysis (GSA). \Rpackage{GSAR} consists of two-sample multivariate 
-nonparametric statistical methods testing a null hypothesis against specific 
-alternative hypotheses, such as differences in mean (shift), variance (scale) 
-or correlation structure. It also offers a graphical visualization tool for 
-the correlation networks obtained from expression data to examine the change 
-in the net correlation structure of a gene set between two conditions based 
-on the minimum spanning trees. The same tool also works for protein-protein 
-Interaction (PPI) networks to highlight the most influential proteins. 
-The package implements the methods proposed in 
+gene set analysis (GSA) \cite{Rahmatallah2017}. \Rpackage{GSAR} consists of 
+two-sample multivariate nonparametric statistical methods testing a null 
+hypothesis against specific alternative hypotheses, such as differences in mean 
+(shift), variance (scale) or correlation structure. It also offers a graphical 
+visualization tool for the correlation networks obtained from expression data 
+to examine the change in the net correlation structure of a gene set between 
+two conditions based on the minimum spanning trees. The same tool also works 
+for protein-protein interaction (PPI) networks to highlight the most 
+influential proteins. The package implements the methods proposed in 
 \cite{Rahmatallah2014, Rahmatallah2012, Friedman1979} which were thoroughly 
 tested using simulated and microarray datasets in \cite{Rahmatallah2014} and 
 \cite{Rahmatallah2012}. Figure \ref{fig:outline} shows the outline of the 
-package. While the test functions in the package analyze one gene set 
-at a time, the wrapper function \Rfunction{TestGeneSets} receives a list 
-of gene sets and invokes a specific test function for all the gene sets 
-in a sequential manner.
+package \cite{Rahmatallah2017}. While the test functions in the package 
+analyze one gene set at a time, the wrapper function \Rfunction{TestGeneSets} 
+receives a list of gene sets and invokes a specific test function for all 
+the gene sets in a sequential manner.
 
 The methods in the package can also be applied to RNA-seq count 
 data given that proper normalization which accounts for both the within-sample 
