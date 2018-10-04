@@ -66,4 +66,4 @@ helicases. Methods, \bold{108}, 56--64.
 
 \keyword{ package }
 
-\seealso{\code{\link[igraph:igraph-package]{igraph}}.}
+\seealso{\code{\link{igraph}}.}

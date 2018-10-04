@@ -28,7 +28,7 @@ Little Rock, AR 72205.\\
 %--------------------------------------------------------------------------
 \section{Introduction}
 %--------------------------------------------------------------------------
-This vignette provides an overview of the \R{} package \Rpackage{GSAR} 
+This vignette provides an overview of package \Rpackage{GSAR} 
 which provides a set of multivariate statistical tests for self-contained 
 gene set analysis (GSA) \cite{Rahmatallah2017}. \Rpackage{GSAR} consists of 
 two-sample multivariate nonparametric statistical methods testing a null 
