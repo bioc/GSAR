@@ -58,7 +58,7 @@ KStest <-
         di[i] <- (ri/nv1) - (si/(nv-nv1))
     }
     D_obs <- sqrt((nv1 * (nv-nv1)) / (nv1 + (nv-nv1))) * max(abs(di))
-    pvalue <- (sum(D_perm > D_obs) + 1) / (length(D_perm) + 1)
+    pvalue <- (sum(D_perm >= D_obs) + 1) / (length(D_perm) + 1)
     if(pvalue.only) return(pvalue)
     if(!pvalue.only) return(list("statistic"=D_obs,"perm.stat"=D_perm,"p.value"=pvalue))
 }
