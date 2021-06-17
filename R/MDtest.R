@@ -20,7 +20,7 @@ MDtest <-
     if(sum(group %in% c(1,2)) < nv) 
         stop("all members in 'group' must have values 1 or 2")
 
-    if((sum(group == 1) < 3) || (sum(group == 2) < 3)) 
+    if((sum(group == 1) < 3) | (sum(group == 2) < 3)) 
         stop("there are less than 3 samples in at least one group")
 
     object <- object[,c(which(group == 1),which(group == 2))]

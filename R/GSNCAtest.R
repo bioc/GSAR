@@ -21,7 +21,7 @@ GSNCAtest <-
     if(sum(group %in% c(1,2)) < nv) 
         stop("all members in 'group' must have values 1 or 2")
 
-    if((sum(group==1)<3) || (sum(group==2)<3)) 
+    if((sum(group==1)<3) | (sum(group==2)<3)) 
         stop("there are less than 3 samples in at least one group")
 
     if(!(cor.method %in% c("pearson", "spearman", "kendall"))) 
@@ -80,7 +80,7 @@ GSNCAtest <-
         {
             sd1 <- apply(group1, 2, "sd")
             sd2 <- apply(group2, 2, "sd")
-            while(((sum(sd1 < min.sd)>0) || (sum(sd2 < min.sd)>0)) && 
+            while(((sum(sd1 < min.sd)>0) | (sum(sd2 < min.sd)>0)) & 
                 (skip.counter <= max.skip))
             {
             if(skip.counter == max.skip) 

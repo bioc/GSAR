@@ -565,7 +565,7 @@ for (k in seq(1, len, by=1)) {
     (C2[[k]] %in% genes.entrez))
                              }
 ## discard C2 pathways which have less than 10 or more than 500 genes
-C2 <- C2[(remained>=10)&&(remained<=500)]
+C2 <- C2[(remained>=10)&(remained<=500)]
 pathway.names <- names(C2)
 c2.pathways <- list()
 for (k in seq(1, length(C2), by=1)) {
@@ -750,7 +750,7 @@ for (k in seq(1, len, by=1)) {
     (C2[[k]] %in% genes.entrez))
                              }
 ## discard C2 pathways which have less than 10 or more than 500 genes
-C2 <- C2[(remained>=10)&&(remained<=500)]
+C2 <- C2[(remained>=10)&(remained<=500)]
 pathway.names <- names(C2)
 c2.pathways <- list()
 for (k in seq(1, length(C2), by=1)) {
