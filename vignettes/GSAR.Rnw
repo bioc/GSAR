@@ -320,7 +320,7 @@ radial.ranking(MST)
 @
 
 <<mst, fig=TRUE, include=FALSE, echo=FALSE, results=verbatim, height=5, width=5>>=
-V(MST)$color <- c(rep("green",20), rep("yellow",20))
+V(MST)$color <- c(rep("green",30), rep("yellow",30))
 par(mfrow=c(1,1), mar=c(1,1,1,1), oma=c(1,1,1,1))
 plot(MST, vertex.label.cex=0.8, vertex.size=9)
 @
