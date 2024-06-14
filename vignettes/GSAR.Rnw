@@ -39,21 +39,21 @@ to examine the change in the net correlation structure of a gene set between
 two conditions based on the minimum spanning trees. The same tool also works 
 for protein-protein interaction (PPI) networks to highlight the most 
 influential proteins. The package implements the methods proposed in 
-\cite{Rahmatallah2014, Rahmatallah2012, Friedman1979} which were thoroughly 
-tested using simulated and microarray datasets in \cite{Rahmatallah2014} and 
-\cite{Rahmatallah2012}. Figure \ref{fig:outline} shows the outline of the 
-package \cite{Rahmatallah2017}. While the test functions in the package 
-analyze one gene set at a time, the wrapper function \Rfunction{TestGeneSets} 
-receives a list of gene sets and invokes a specific test function for all 
-the gene sets in a sequential manner.
+\cite{Rahmatallah2024, Rahmatallah2014, Rahmatallah2012, Friedman1979} which were 
+tested using simulation and real datasets. Figure \ref{fig:outline} shows the 
+outline of the package \cite{Rahmatallah2017}. While the test functions in the 
+package analyze one gene set at a time, the wrapper function 
+\Rfunction{TestGeneSets} receives a list of gene sets and invokes a specific 
+test function for all the gene sets in a sequential manner.
 
 The methods in the package can also be applied to RNA-seq count 
 data given that proper normalization which accounts for both the within-sample 
 differences (gene lengths) and between-samples differences (library sizes) is 
 used. However, for RNA-seq data the variance is a function of mean expression 
 and applying the variance tests (\Rfunction{RKStest}, \Rfunction{RMDtest}, 
-\Rfunction{AggrFtest}) to RNA-seq data highly depends on the normalization 
-method. This specific topic is not well-studied and characterized yet. 
+\Rfunction{RADtest}, \Rfunction{RCVMtest}, or \Rfunction{AggrFtest}) to 
+RNA-seq data highly depends on the normalization method. 
+This specific topic is not well-studied and characterized yet. 
 This vignette begins with a brief overview of the theoretical concepts 
 behind the statistical methods, and then provides a number of 
 fully worked case studies, from microarrays to RNA-seq count data.
@@ -89,10 +89,11 @@ hypotheses \cite{Rahmatallah2012}. For GSA, testing hypotheses other than the
 equality of the mean expression vectors remains underexplored. Package 
 \Rpackage{GSAR} provides a set of methods to test a null hypothesis against 
 specific alternatives, such as differential distribution 
-(function \Rfunction{WWtest}), shift or mean (functions \Rfunction{KStest} 
-and \Rfunction{MDtest}), scale or variance (functions \Rfunction{RKStest}, 
-\Rfunction{RMDtest}, and \Rfunction{AggrFtest}) or net correlation structure 
-(function \Rfunction{GSNCAtest}). 
+(function \Rfunction{WWtest}), shift or mean (functions \Rfunction{KStest}, 
+\Rfunction{MDtest}, \Rfunction{ADtest}, and \Rfunction{CVMtest}), scale or 
+variance (functions \Rfunction{RKStest}, \Rfunction{RMDtest}, 
+\Rfunction{RADtest}, \Rfunction{RCVMtest}, and \Rfunction{AggrFtest}) or 
+net correlation structure (function \Rfunction{GSNCAtest}). 
 
 Most of the statistical methods available in package \Rpackage{GSAR} (all 
 except \Rfunction{GSNCAtest} and \Rfunction{AggrFtest}) are network or 
@@ -152,9 +153,10 @@ to the positions of their corresponding vertices in the MST. The purpose of
 this ranking is to obtain the strong relationship between observations 
 differences in ranks and their distances in $R^{p}$. The ranking algorithm can 
 be designed specifically to confine a particular alternative hypothesis more 
-detection power \cite{Rahmatallah2012}. Five tests in package \Rpackage{GSAR} 
+detection power \cite{Rahmatallah2012}. Nine tests in package \Rpackage{GSAR} 
 are based on MST: \Rfunction{WWtest}, \Rfunction{KStest}, \Rfunction{MDtest}, 
-\Rfunction{RKStest}, and \Rfunction{RMDtest}. 
+\Rfunction{ADtest}, \Rfunction{CVMtest}, \Rfunction{RKStest}, 
+\Rfunction{RMDtest}, \Rfunction{RADtest}, and \Rfunction{RCVMtest}. 
 
 The following example generates a feature set of $20$ features and $40$ 
 observations using the random multivariate normal data generator from package 
@@ -227,7 +229,7 @@ positions in clusters.
 %--------------------------------------------------------------------------
 \section{Statistical methods}
 %--------------------------------------------------------------------------
-Package \Rpackage{GSAR} provides seven statistical methods that test five 
+Package \Rpackage{GSAR} provides eleven statistical methods that test five 
 specific alternative hypotheses against the null (see Figure \ref{fig:outline}), 
 two functions to find the MST2 of correlation and PPI networks, one wrapper 
 function to plot the MST2 of correlation networks obtained from gene expression 
@@ -338,7 +340,12 @@ plot(MST, vertex.label.cex=0.8, vertex.size=9)
 %--------------------------------------------------------------------------
 The mean deviation (MD) statistic calculates the average deviation between 
 the Cumulative Distribution Functions (CDFs) of the ranks of samples from 
-X and Y. The MD statistic for a gene set of size $p$ is defined as
+X and Y. The statistic was introduced for a single-sample version of Gene 
+Set Enrichment Analysis (ssGSEA) in \cite{Barbie2009} to estimate enrichment 
+scores for gene sets. It was repurposed in package GSAR to test if the 
+mean deviation between the empirical CDFs of node (sample) ranks of two 
+groups in the MST is significant. The MD statistic for a gene set of size 
+$p$ is defined as
 
 $$D = \sum_{i=1}^{p} \left[ P(X,i) - P(Y,i) \right]$$
 
@@ -365,6 +372,50 @@ combining this statistic with appropriate ranking schemes, allows the test
 of specific alternative hypotheses, namely diffferential mean (mean deviation 
 test function \Rfunction{MDtest}) and differential variance (radial mean 
 deviation function \Rfunction{RMDtest}).
+
+%--------------------------------------------------------------------------
+\subsection{Cramer-Von Mises tests}
+%--------------------------------------------------------------------------
+This statistic measures the deviation between sample ranks of two groups in 
+the MST. The CVM statistic can be defined as 
+
+$$ C = \frac{n_{1} n_{2}}{N^{2}} \left\{ \sum_{i=1}^{n_{1}} \left[ 
+\frac{r_{i}}{n_{1}} - i \left( \frac{1}{n_{1}} + \frac{1}{n_{2}} \right) 
+\right]^{2} + \sum_{j=1}^{n_{2}} \left[ \frac{s_{j}}{n_{2}} - j \left( 
+\frac{1}{n_{1}} + \frac{1}{n_{2}} \right) \right]^{2} \right\} $$ 
+
+where $r_{i}$ and $s_{j}$ are respectively the number of samples from 
+conditions 1 and 2 which ranked lower than $i$, $1 \le i \le N$ and 
+$N$ is the total number of samples. The null distribution of $C$ is obtained 
+by permuting sample labels for a large number of times (nperm) and calculating 
+$C$ for each time. $P$-value is calculated as
+
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ C_{k} \geq C_{obs} \right] + 1}{nperm + 1}$$
+
+\noindent where $C_{k}$ is the test statistic for permutation $k$, $C_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function. The performance of this 
+test under different alternative hypotheses was examind in \cite{Rahmatallah2024}. 
+
+%--------------------------------------------------------------------------
+\subsection{Anderson-Darling tests}
+%--------------------------------------------------------------------------
+This statistic measures the deviation between sample ranks of two groups in the MST, 
+allowing higher weight to deviations at the tails of the distribution. The AD 
+statistic can be defined as 
+
+$$A = \frac{1}{n_{1} n_{2}} \sum_{i=1}^{N-1} \frac{(r_{i} N - i n_{1})^{2}}{i (N-i)}$$
+
+where $r_{i}$ is the number of samples from condition 1 which ranked lower 
+than $i$, $1 \le i \le N$ and $N$ is the total number of samples. 
+The null distribution of $A$ is obtained by permuting sample labels for a large 
+number of times (nperm) and calculating $A$ for each time. $P$-value is calculated as
+
+$$P-value = \frac{\sum_{k=1}^{nperm} I \left[ A_{k} \geq A_{obs} \right] + 1}{nperm + 1}$$
+
+\noindent where $A_{k}$ is the test statistic for permutation $k$, $A_{obs}$ is the 
+observed test statistic, and $I$ is the indicator function. The performance 
+of this test under different alternative hypotheses was examind in 
+\cite{Rahmatallah2024}.
 
 %--------------------------------------------------------------------------
 \subsection{Aggregated F-test}
@@ -588,15 +639,23 @@ group.label <- c(rep(1,17), rep(2,33))
 WW_pvalue <- WWtest(target.pathway, group.label)
 KS_pvalue <- KStest(target.pathway, group.label)
 MD_pvalue <- MDtest(target.pathway, group.label)
+AD_pvalue <- ADtest(target.pathway, group.label)
+CVM_pvalue <- CVMtest(target.pathway, group.label)
 RKS_pvalue <- RKStest(target.pathway, group.label)
 RMD_pvalue <- RMDtest(target.pathway, group.label)
+RAD_pvalue <- RADtest(target.pathway, group.label)
+RCVM_pvalue <- RCVMtest(target.pathway, group.label)
 F_pvalue <- AggrFtest(target.pathway, group.label)
 GSNCA_pvalue <- GSNCAtest(target.pathway, group.label)
 WW_pvalue
 KS_pvalue
 MD_pvalue
+AD_pvalue
+CVM_pvalue
 RKS_pvalue
 RMD_pvalue
+RAD_pvalue
+RCVM_pvalue
 F_pvalue
 GSNCA_pvalue
 @
@@ -605,7 +664,9 @@ GSNCA_pvalue
 gene sets expressed with different distributions, means, variances or 
 correlation structure between two conditions. At a significance level $0.05$, 
 the targeted pathway shows a statistical evidence of being differentially 
-coexpressed only. The MST2s of the correlation network for WT and MUT groups 
+coexpressed. It also shows marginal significance for differential mean using 
+the AD and CVM tests. Differential variance is insignificant by all tests. 
+The MST2s of the correlation network for WT and MUT groups 
 are shown in Figure \ref{fig:mst2plot}, generated by function 
 \Rfunction{plotMST2.pathway}
 
@@ -771,16 +832,18 @@ group.label <- c(rep(1,37), rep(2,42))
 WW_pvalue <- WWtest(KCMLpathway, group.label)
 KS_pvalue <- KStest(KCMLpathway, group.label)
 MD_pvalue <- MDtest(KCMLpathway, group.label)
+AD_pvalue <- ADtest(KCMLpathway, group.label)
 RKS_pvalue <- RKStest(KCMLpathway, group.label)
 RMD_pvalue <- RMDtest(KCMLpathway, group.label)
-F_pvalue <- AggrFtest(KCMLpathway, group.label)
+RAD_pvalue <- RADtest(KCMLpathway, group.label)
 GSNCA_pvalue <- GSNCAtest(KCMLpathway, group.label)
 WW_pvalue
 KS_pvalue
 MD_pvalue
+AD_pvalue
 RKS_pvalue
 RMD_pvalue
-F_pvalue
+RAD_pvalue
 GSNCA_pvalue
 @
 

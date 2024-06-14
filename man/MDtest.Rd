@@ -30,7 +30,7 @@ nonparametric multivariate test by ranking samples based on the minimum spanning
 tree (MST) as proposed by Friedman and Rafsky (1979). The MST of the weighted 
 undirectional graph created from the samples is found. 
 The nodes of the MST are ranked based on their position in the MST. The MST 
-is rooted at the node with largest geodisic distance (rank 1) and then nodes 
+is rooted at the node with largest geodisic distance and then nodes 
 are ranked in the High Directed Preorder (HDP) traversal of the tree 
 (Rahmatallah et. al. 2012). The mean deviation between the cumulative 
 distribution functions (CDFs) of sample ranks in two conditions is calculated. 
@@ -41,7 +41,13 @@ P-value is calculated as
 \deqn{p.value = \frac{\sum_{k=1}^{nperm} I \left[ |D_{k}| \geq |D_{obs}| \right] + 1}{nperm + 1}}
 
 where \eqn{D_{k}} is the test statistic for permutation \code{k}, \eqn{D_{obs}} is the 
-observed test statistic, and \code{I} is the indicator function.}
+observed test statistic, and \code{I} is the indicator function. 
+This statistic was introduced for a single-sample version of Gene 
+Set Enrichment Analysis (ssGSEA) in Barbie et al. (2009) to estimate enrichment 
+scores for gene sets. It was repurposed in package GSAR to test if the 
+mean deviation between the empirical CDFs of sample ranks of two 
+groups in the MST is significant.
+}
 
 \value{
 When \code{pvalue.only=TRUE} (default), function \code{MDtest} returns 
@@ -59,6 +65,10 @@ Rahmatallah Y., Emmert-Streib F. and Glazko G. (2012) Gene set analysis for
 self-contained tests: complex null and specific alternative hypotheses. 
 Bioinformatics \bold{28}, 3073--3080.
 
+Barbie D., Tamayo P., Boehm J., et al. (2009) Systematic RNA interference 
+reveals that oncogenic KRAS-driven cancers require TBK1. 
+Nature \bold{462}, 108--112.
+
 Friedman J. and Rafsky L. (1979) Multivariate generalization of the 
 Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 }
@@ -70,8 +80,9 @@ work properly if there is any node in the MST with more than 26 links.
 However, this situation is almost impossible for a dataset composed of a few 
 hundreds or less of samples.}
 
-\seealso{\code{\link{KStest}}, \code{\link{WWtest}}, \code{\link{RKStest}}, 
-\code{\link{RMDtest}}, \code{\link{HDP.ranking}}.}
+\seealso{\code{\link{KStest}}, \code{\link{ADtest}}, \code{\link{CVMtest}},
+\code{\link{WWtest}}, \code{\link{RKStest}}, \code{\link{RMDtest}}, 
+\code{\link{RADtest}}, \code{\link{RCVMtest}}, \code{\link{HDP.ranking}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

@@ -42,7 +42,13 @@ times and calculating the test statistic for each. P-value is calculated as
 \deqn{p.value = \frac{\sum_{k=1}^{nperm} I \left[ |D_{k}| \geq |D_{obs}| \right] + 1}{nperm + 1}}
 
 where \eqn{D_{k}} is the test statistic for permutation \code{k}, \eqn{D_{obs}} is the 
-observed test statistic, and \code{I} is the indicator function.}
+observed test statistic, and \code{I} is the indicator function. 
+This statistic was introduced for a single-sample version of Gene 
+Set Enrichment Analysis (ssGSEA) in Barbie et al. (2009) to estimate enrichment 
+scores for gene sets. It was repurposed in package GSAR to test if the 
+mean deviation between the empirical CDFs of sample ranks of two 
+groups in the MST is significant.
+}
 
 \value{
 When \code{pvalue.only=TRUE} (default), function \code{RMDtest} returns 
@@ -60,6 +66,10 @@ Rahmatallah Y., Emmert-Streib F. and Glazko G. (2012) Gene set analysis for
 self-contained tests: complex null and specific alternative hypotheses. 
 Bioinformatics \bold{28}, 3073--3080.
 
+Barbie D., Tamayo P., Boehm J., et al. (2009) Systematic RNA interference 
+reveals that oncogenic KRAS-driven cancers require TBK1. 
+Nature \bold{462}, 108--112.
+
 Friedman J. and Rafsky L. (1979) Multivariate generalization of the 
 Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 }
@@ -73,8 +83,9 @@ variance for RNA-Seq counts is not recommended without proper data
 normalization.
 }
 
-\seealso{\code{\link{RKStest}}, \code{\link{WWtest}}, \code{\link{MDtest}}, 
-\code{\link{KStest}}.}
+\seealso{\code{\link{RKStest}}, \code{\link{RADtest}}, \code{\link{RCVMtest}}, 
+\code{\link{WWtest}}, \code{\link{KStest}}, \code{\link{MDtest}}, 
+\code{\link{ADtest}}, \code{\link{CVMtest}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

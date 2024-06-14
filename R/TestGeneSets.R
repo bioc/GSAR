@@ -62,11 +62,25 @@ TestGeneSets <-
     if(test=="MDtest")
         res[[length(res)+1]] <- MDtest(object=object[geneSets[[k]],], 
             group=group, nperm=nperm, pvalue.only=pvalue.only)
+    if(test=="ADtest")
+        res[[length(res)+1]] <- ADtest(object=object[geneSets[[k]],],
+            group=group, nperm=nperm, pvalue.only=pvalue.only)
+    if(test=="CVMtest")
+        res[[length(res)+1]] <- CVMtest(object=object[geneSets[[k]],],
+            group=group, nperm=nperm, pvalue.only=pvalue.only)
+    if(test=="RKStest")
+        res[[length(res)+1]] <- RKStest(object=object[geneSets[[k]],],
+            group=group, mst.order=mst.order, nperm=nperm,
+                pvalue.only=pvalue.only)
     if(test=="RMDtest")
         res[[length(res)+1]] <- RMDtest(object=object[geneSets[[k]],],
             group=group, mst.order=mst.order, nperm=nperm,
                 pvalue.only=pvalue.only)
-    if(test=="RKStest")
+    if(test=="RADtest")
+        res[[length(res)+1]] <- RADtest(object=object[geneSets[[k]],],
+            group=group, mst.order=mst.order, nperm=nperm,
+                pvalue.only=pvalue.only)
+    if(test=="RCVMtest")
         res[[length(res)+1]] <- RKStest(object=object[geneSets[[k]],],
             group=group, mst.order=mst.order, nperm=nperm,
                 pvalue.only=pvalue.only)

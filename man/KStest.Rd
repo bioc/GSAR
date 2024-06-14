@@ -75,8 +75,9 @@ work properly if there is any node in the MST with more than 26 links.
 However, this situation is almost impossible for a dataset composed of a few 
 hundreds or less of samples.}
 
-\seealso{\code{\link{MDtest}}, \code{\link{WWtest}}, \code{\link{RKStest}}, 
-\code{\link{RMDtest}}, \code{\link{HDP.ranking}}.}
+\seealso{\code{\link{MDtest}}, \code{\link{ADtest}}, \code{\link{CVMtest}}, 
+\code{\link{WWtest}}, \code{\link{RKStest}}, \code{\link{RMDtest}}, 
+\code{\link{RADtest}}, \code{\link{RCVMtest}}, \code{\link{HDP.ranking}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

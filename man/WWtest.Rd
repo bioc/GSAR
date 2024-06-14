@@ -62,7 +62,8 @@ Yasir Rahmatallah and Galina Glazko
 }
 
 \seealso{\code{\link{KStest}}, \code{\link{RKStest}}, \code{\link{MDtest}}, 
-\code{\link{RMDtest}}.}
+\code{\link{RMDtest}}, \code{\link{ADtest}}, \code{\link{RADtest}}, 
+\code{\link{CVMtest}}, \code{\link{RCVMtest}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

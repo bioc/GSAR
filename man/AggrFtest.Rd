@@ -72,7 +72,8 @@ Statistical Society Series B \bold{57}, 289--300.
 
 \author{Yasir Rahmatallah and Galina Glazko}
 
-\seealso{\code{\link{RKStest}}, \code{\link{RMDtest}}.}
+\seealso{\code{\link{RKStest}}, \code{\link{RMDtest}}, 
+\code{\link{RADtest}}, \code{\link{RCVMtest}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

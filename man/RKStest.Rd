@@ -78,8 +78,9 @@ variance for RNA-Seq counts is not recommended without proper data
 normalization.
 }
 
-\seealso{\code{\link{RMDtest}}, \code{\link{WWtest}}, \code{\link{MDtest}}, 
-\code{\link{KStest}}.}
+\seealso{\code{\link{RMDtest}}, \code{\link{RADtest}}, \code{\link{RCVMtest}}, 
+\code{\link{WWtest}}, \code{\link{KStest}}, \code{\link{MDtest}}, 
+\code{\link{ADtest}}, \code{\link{CVMtest}}.}
 
 \examples{
 ## generate a feature set of length 20 in two conditions

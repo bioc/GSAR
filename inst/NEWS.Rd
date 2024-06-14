@@ -2,6 +2,21 @@
 \title{GSAR News}
 \encoding{UTF-8}
 
+\section{Version 1.40.0}{\itemize{
+
+\item
+New function ADtest is introduced. It implements a nonparametric multivariate test of means based on the HDP ranking of samples in the MST and the Anderson-Darling statistic.
+
+\item
+New function RADtest is introduced. It implements a nonparametric multivariate test of variance based on the radial ranking of samples in the MST and the Anderson-Darling statistic.
+
+\item
+New function CVMtest is introduced. It implements a nonparametric multivariate test of means based on the HDP ranking of samples in the MST and the Cramer-Von Mises statistic.
+
+\item
+New function RCVMtest is introduced. It implements a nonparametric multivariate test of variance based on the radial ranking of samples in the MST and the Cramer-Von Mises statistic.
+}}
+
 \section{Version 1.8.0}{\itemize{
 
 \item

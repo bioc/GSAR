@@ -5,8 +5,8 @@
 \title{Test a List of Gene Sets Using a Specific Statistical Method}
 
 \description{A wrapper function that invokes a specific statistical method 
-from the ones available in package GSAR (see Rahmatallah et. al. 2014, 
-Rahmatallah et. al. 2012 and Friedman and Rafsky 1979 for details) to 
+from the ones available in package GSAR (see Rahmatallah and Glazko 2024, 
+Rahmatallah et. al. 2014, and Rahmatallah et. al. 2012 for details) to 
 test a list of gene sets in a sequential order and returns results in 
 a list object.}
 
@@ -27,13 +27,14 @@ size. Default value is 500.}
   \item{test}{a character parameter indicating which statistical method 
 to use for testing the gene sets. Must be one of \dQuote{\code{GSNCAtest}}, 
 \dQuote{\code{WWtest}}, \dQuote{\code{KStest}}, \dQuote{\code{MDtest}}, 
-\dQuote{\code{RKStest}}, \dQuote{\code{RMDtest}}.}
+\dQuote{\code{ADtest}}, \dQuote{\code{CVMtest}}, \dQuote{\code{RKStest}}, 
+\dQuote{\code{RMDtest}}, \dQuote{\code{RADtest}}, or \dQuote{\code{RCVMtest}}.}
   \item{nperm}{number of permutations used to estimate the null distribution 
 of the test statistic. If not given, a default value 1000 is used.}
   \item{mst.order}{numeric value to indicate the consideration of the union 
-of the first \code{mst.order} MSTs when \dQuote{\code{RKStest}} or 
-\dQuote{\code{RMDtest}} are used. Default value is 1. Maximum allowed 
-value is 5.}
+of the first \code{mst.order} MSTs when \dQuote{\code{RKStest}}, 
+\dQuote{\code{RMDtest}}, \dQuote{\code{RADtest}}, or \dQuote{\code{RCVMtest}} 
+are used. Default value is 1. Maximum allowed value is 5.}
   \item{pvalue.only}{logical. If \code{TRUE} (default), the p-value is 
 returned. If \code{FALSE} a list of length three containing the observed 
 statistic, the vector of permuted statistics, and the p-value is returned.}
@@ -63,6 +64,10 @@ length 3 with the following components:
 }
 
 \references{
+Rahmatallah Y. and Glazko G. (2024) Gene Set Analysis: improving data 
+interpretability with new differential variance tests. Briefings in 
+Bioinformatics \bold{(submitted)}.
+
 Rahmatallah Y., Emmert-Streib F. and Glazko G. (2014) Gene sets net 
 correlations analysis (GSNCA): a multivariate differential coexpression test 
 for gene sets. Bioinformatics \bold{30}, 360--368.
@@ -70,9 +75,6 @@ for gene sets. Bioinformatics \bold{30}, 360--368.
 Rahmatallah Y., Emmert-Streib F. and Glazko G. (2012) Gene set analysis for 
 self-contained tests: complex null and specific alternative hypotheses. 
 Bioinformatics \bold{28}, 3073--3080.
-
-Friedman J. and Rafsky L. (1979) Multivariate generalization of the 
-Wald-Wolfowitz and Smirnov two-sample tests. Ann. Stat. \bold{7}, 697--717.
 }
 
 \author{Yasir Rahmatallah and Galina Glazko}
