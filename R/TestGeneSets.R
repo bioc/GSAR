@@ -81,7 +81,7 @@ TestGeneSets <-
             group=group, mst.order=mst.order, nperm=nperm,
                 pvalue.only=pvalue.only)
     if(test=="RCVMtest")
-        res[[length(res)+1]] <- RKStest(object=object[geneSets[[k]],],
+        res[[length(res)+1]] <- RCVMtest(object=object[geneSets[[k]],],
             group=group, mst.order=mst.order, nperm=nperm,
                 pvalue.only=pvalue.only)
     }
