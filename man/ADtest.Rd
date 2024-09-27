@@ -64,8 +64,9 @@ length 3 with the following components:
 
 \references{
 Rahmatallah Y. and Glazko G. (2024) Gene Set Analysis: improving data 
-interpretability with new differential variance tests. Briefings in 
-Bioinformatics \bold{(submitted)}.
+interpretability with new differential variance tests. 09 September 2024, 
+PREPRINT (Version 1) available at Research Square 
+[https://doi.org/10.21203/rs.3.rs-4888767/v1].
 
 Rahmatallah Y., Emmert-Streib F. and Glazko G. (2012) Gene set analysis for 
 self-contained tests: complex null and specific alternative hypotheses. 

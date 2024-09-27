@@ -49,8 +49,9 @@ Galina Glazko <gvglazko@uams.edu>
 
 \references{
 Rahmatallah Y. and Glazko G. (2024) Gene Set Analysis: improving data 
-interpretability with new differential variance tests. Briefings in 
-Bioinformatics \bold{(submitted)}.
+interpretability with new differential variance tests. 09 September 2024, 
+PREPRINT (Version 1) available at Research Square 
+[https://doi.org/10.21203/rs.3.rs-4888767/v1].
 
 Rahmatallah Y., Emmert-Streib F. and Glazko G. (2014) Gene sets net 
 correlations analysis (GSNCA): a multivariate differential coexpression test 
