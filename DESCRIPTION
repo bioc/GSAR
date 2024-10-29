@@ -1,7 +1,7 @@
 Package: GSAR
 Type: Package
 Title: Gene Set Analysis in R
-Version: 1.40.0
+Version: 1.41.0
 Date: 2024-9-27
 Author: Yasir Rahmatallah <yrahmatallah@uams.edu>, Galina Glazko <gvglazko@uams.edu>
 Maintainer: Yasir Rahmatallah <yrahmatallah@uams.edu>, Galina Glazko <gvglazko@uams.edu>
